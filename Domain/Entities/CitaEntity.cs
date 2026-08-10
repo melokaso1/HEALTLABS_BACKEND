@@ -2,10 +2,10 @@ namespace Domain.Entities
 {
     public class Cita
     {
-        public int IdCita { get; set; }
-        public int IdPaciente { get; set; }
-        public int IdMedico { get; set; }
-        public int IdEstadoCita { get; set; }
+        public Guid IdCita { get; set; }
+        public int PacienteId { get; set; }
+        public int ProfesionalId { get; set; }
+        public int EstadoCitaId { get; set; }
         public DateOnly Fecha { get; set; }
         public TimeOnly HoraInicio { get; set; }
         public TimeOnly HoraFin { get; set; }

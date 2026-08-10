@@ -2,7 +2,7 @@ namespace Domain.Entities
 {
     public class Diagnostico
     {
-        public int IdDiagnostico { get; set; }
+        public Guid IdDiagnostico { get; set; }
         public string CodigoCie10 { get; set; } = string.Empty;
         public string Descripcion { get; set; } = string.Empty;
         public bool Activo { get; set; }

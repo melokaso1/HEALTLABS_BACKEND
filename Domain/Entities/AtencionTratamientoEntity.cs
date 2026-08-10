@@ -2,9 +2,9 @@ namespace Domain.Entities
 {
     public class AtencionTratamiento
     {
-        public int IdAtencionTratamiento { get; set; }
-        public int IdDetalleCita { get; set; }
-        public int IdTratamiento { get; set; }
+        public Guid IdAtencionTratamiento { get; set; }
+        public int DetalleCitaId { get; set; }
+        public int TratamientoId { get; set; }
         public string? DosisPersonalizada { get; set; }
         public string? FrecuenciaPersonalizada { get; set; }
         public int? DuracionDiasPersonalizada { get; set; }
