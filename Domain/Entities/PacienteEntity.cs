@@ -6,6 +6,6 @@ namespace Domain.Entities
         public int? IdPersona { get; set; }
         public bool Activo { get; set; }
 
-        public Persona? Persona { get; set; }
+        public PersonaEntity? Persona { get; set; }
     }
 }

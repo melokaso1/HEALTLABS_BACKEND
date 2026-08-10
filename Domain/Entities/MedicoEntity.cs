@@ -8,6 +8,5 @@ namespace Domain.Entities
 
         public Empleado? Empleado { get; set; }
         public EspecialidadEntity? Especialidad { get; set; }
-        public ICollection<Disponibilidad> Disponibilidades { get; set; } = [];
     }
 }

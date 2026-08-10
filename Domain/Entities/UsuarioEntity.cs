@@ -13,3 +13,4 @@ namespace Domain.Entities
         public ICollection<Empleado> Empleados { get; set; } = [];
     }
 }
+
