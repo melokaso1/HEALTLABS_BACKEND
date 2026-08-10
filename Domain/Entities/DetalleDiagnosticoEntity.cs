@@ -1,13 +1,13 @@
 namespace Domain.Entities
 {
-    public class DetalleDiagnostico
+    public class DetalleDiagnosticoEntity
     {
         public Guid IdDetalleDiagnostico { get; set; }
         public int DetalleCitaId { get; set; }
         public int DiagnosticoId { get; set; }
         public bool Principal { get; set; }
 
-        public DetalleCita? DetalleCita { get; set; }
-        public Diagnostico? Diagnostico { get; set; }
+        public DetalleCitaEntity? DetalleCita { get; set; }
+        public DiagnosticoEntity? Diagnostico { get; set; }
     }
 }

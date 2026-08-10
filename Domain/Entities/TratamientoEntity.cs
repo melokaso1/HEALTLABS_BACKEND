@@ -1,6 +1,6 @@
 namespace Domain.Entities
 {
-    public class Tratamiento
+    public class TratamientoEntity
     {
         public Guid IdTratamiento { get; set; }
         public string Codigo { get; set; } = string.Empty;
@@ -12,6 +12,6 @@ namespace Domain.Entities
         public string? Indicaciones { get; set; }
         public bool Activo { get; set; }
 
-        public ICollection<AtencionTratamiento> AtencionesTratamiento { get; set; } = [];
+        public ICollection<AtencionTratamientoEntity> AtencionesTratamiento { get; set; } = [];
     }
 }

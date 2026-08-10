@@ -6,7 +6,7 @@ namespace Domain.Entities
         public int? IdEmpleado { get; set; }
         public int? IdEspecialidad { get; set; }
 
-        public Empleado? Empleado { get; set; }
+        public EmpleadoEntity? Empleado { get; set; }
         public EspecialidadEntity? Especialidad { get; set; }
     }
 }

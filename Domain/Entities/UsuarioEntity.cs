@@ -1,6 +1,6 @@
 namespace Domain.Entities
 {
-    public class Usuario
+    public class UsuarioEntity
     {
         public int IdUsuario { get; set; }
         public int? IdRol { get; set; }
@@ -10,7 +10,7 @@ namespace Domain.Entities
         public string? JwtCode { get; set; }
 
         public RolEntity? Rol { get; set; }
-        public ICollection<Empleado> Empleados { get; set; } = [];
+        public ICollection<EmpleadoEntity> Empleados { get; set; } = [];
     }
 }
 

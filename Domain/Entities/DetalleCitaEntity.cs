@@ -1,6 +1,6 @@
 namespace Domain.Entities
 {
-    public class DetalleCita
+    public class DetalleCitaEntity
     {
         public Guid IdDetalle { get; set; }
         public int CitaId { get; set; }
@@ -9,8 +9,8 @@ namespace Domain.Entities
         public string? ResumenConsulta { get; set; }
         public DateTime FechaRegistro { get; set; }
 
-        public Cita? Cita { get; set; }
-        public ICollection<DetalleDiagnostico> DetallesDiagnostico { get; set; } = [];
-        public ICollection<AtencionTratamiento> AtencionesTratamiento { get; set; } = [];
+        public CitaEntity? Cita { get; set; }
+        public ICollection<DetalleDiagnosticoEntity> DetallesDiagnostico { get; set; } = [];
+        public ICollection<AtencionTratamientoEntity> AtencionesTratamiento { get; set; } = [];
     }
 }

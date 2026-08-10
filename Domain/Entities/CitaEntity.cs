@@ -1,6 +1,6 @@
 namespace Domain.Entities
 {
-    public class Cita
+    public class CitaEntity
     {
         public Guid IdCita { get; set; }
         public int PacienteId { get; set; }
@@ -14,7 +14,7 @@ namespace Domain.Entities
         public int IdUsuarioCreacion { get; set; }
         public DateTime FechaCreacion { get; set; }
 
-        public EstadoCita? EstadoCita { get; set; }
-        public ICollection<DetalleCita> DetallesCita { get; set; } = [];
+        public EstadoCitaEntity? EstadoCita { get; set; }
+        public ICollection<DetalleCitaEntity> DetallesCita { get; set; } = [];
     }
 }

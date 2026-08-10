@@ -1,11 +1,11 @@
 namespace Domain.Entities
 {
-    public class EstadoCita
+    public class EstadoCitaEntity
     {
         public Guid IdEstadoCita { get; set; }
         public string Codigo { get; set; } = string.Empty;
         public string Descripcion { get; set; } = string.Empty;
 
-        public ICollection<Cita> Citas { get; set; } = [];
+        public ICollection<CitaEntity> Citas { get; set; } = [];
     }
 }

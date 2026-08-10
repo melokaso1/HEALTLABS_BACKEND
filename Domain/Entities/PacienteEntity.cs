@@ -1,6 +1,6 @@
 namespace Domain.Entities
 {
-    public class Paciente
+    public class PacienteEntity
     {
         public int IdPaciente { get; set; }
         public int? IdPersona { get; set; }

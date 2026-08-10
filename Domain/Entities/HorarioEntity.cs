@@ -1,6 +1,6 @@
 namespace Domain.Entities
 {
-    public class Horario
+    public class HorarioEntity
     {
         public Guid IdHorario { get; set; }
         public DateOnly Fecha { get; set; }
@@ -9,6 +9,6 @@ namespace Domain.Entities
         public TimeOnly Retorno { get; set; }
         public bool Descanso { get; set; }
 
-        public Medico? Medico { get; set; }
+        public MedicoEntity? Medico { get; set; }
     }
 }
