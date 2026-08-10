@@ -1,0 +1,174 @@
+Table tipo_documento {
+  id_tipo_documento int [pk]
+  nombre varchar
+}
+
+Table personas {
+  id_persona int [pk]
+  nombre varchar
+  apellido varchar
+  id_tipo_documento int
+  numero_documento varchar
+  direccion varchar
+  telefono varchar
+  fecha_nacimiento date
+  sexo varchar
+}
+
+Table rol {
+  id_rol int [pk]
+  nombre_rol varchar
+  descripcion varchar
+}
+
+Table usuario {
+  id_usuario int [pk]
+  id_rol int
+  email varchar
+  password varchar
+  activo boolean
+  jwt_code text
+}
+
+Table cargo {
+  id_cargo int [pk]
+  nombre varchar
+  codigo varchar
+  descripcion varchar
+  nivel_jerarquico int
+}
+
+Table empleado {
+  id_empleado int [pk]
+  id_persona int
+  id_usuario int
+  id_cargo int
+  fecha_ingreso date
+  fecha_retiro date
+  activo boolean
+}
+
+Table paciente {
+  id_paciente int [pk]
+  id_persona int
+  activo boolean
+}
+
+Table estado_cita {
+  id_estado_cita int [pk]
+  codigo varchar
+  descripcion varchar
+}
+
+Table cita {
+  id_cita int [pk]
+  id_paciente int
+  id_medico int
+  id_estado_cita int
+  fecha date
+  hora_inicio time
+  hora_fin time
+  motivo_consulta varchar
+  observaciones text
+  id_usuario_creacion int
+  fecha_creacion datetime
+}
+
+Table detalle_cita {
+  id_detalle int [pk]
+  id_cita int
+  id_profesional int
+  nota_atencion text
+  resumen_consulta text
+  fecha_registro datetime
+}
+
+Table especialidad {
+  id_especialidad int [pk]
+  nombre varchar
+  descripcion varchar
+}
+
+Table medico {
+  id_medico int [pk]
+  id_empleado int
+  id_especialidad int
+}
+
+Table disponibilidad {
+  id_disponibilidad int [pk]
+  id_medico int
+  dia_semana int
+  hora_inicio time
+  hora_fin time
+  activo boolean
+  fecha_inicio_vigencia date
+  fecha_fin_vigencia date
+}
+
+Table bloque_horario {
+  id_bloque int [pk]
+  id_disponibilidad int
+  fecha date
+  hora_inicio time
+  hora_fin time
+  ocupado boolean
+}
+
+Table diagnostico {
+  id_diagnostico int [pk]
+  codigo_cie10 varchar
+  descripcion varchar
+  activo boolean
+}
+
+Table detalle_diagnostico {
+  id_detalle_diagnostico int [pk]
+  id_detalle_cita int
+  id_diagnostico int
+  principal boolean
+}
+
+Table tratamiento {
+  id_tratamiento int [pk]
+  codigo varchar
+  nombre varchar
+  descripcion varchar
+  dosis varchar
+  frecuencia varchar
+  duracion_dias int
+  indicaciones text
+  activo boolean
+}
+
+Table atencion_tratamiento {
+  id_atencion_tratamiento int [pk]
+  id_detalle_cita int
+  id_tratamiento int
+  dosis_personalizada varchar
+  frecuencia_personalizada varchar
+  duracion_dias_personalizada int
+  indicaciones_personalizadas text
+}
+
+/* Relaciones */
+Ref: personas.id_tipo_documento > tipo_documento.id_tipo_documento
+Ref: empleado.id_persona > personas.id_persona
+Ref: empleado.id_cargo > cargo.id_cargo
+Ref: paciente.id_persona > personas.id_persona
+Ref: usuario.id_rol > rol.id_rol
+Ref: medico.id_empleado > empleado.id_empleado
+Ref: medico.id_especialidad > especialidad.id_especialidad
+Ref: disponibilidad.id_medico > medico.id_medico
+Ref: bloque_horario.id_disponibilidad > disponibilidad.id_disponibilidad
+Ref: cita.id_paciente > paciente.id_paciente
+Ref: cita.id_medico > medico.id_medico
+Ref: cita.id_estado_cita > estado_cita.id_estado_cita
+Ref: cita.id_usuario_creacion > usuario.id_usuario
+Ref: detalle_cita.id_cita > cita.id_cita
+Ref: detalle_cita.id_profesional > medico.id_medico
+Ref: detalle_diagnostico.id_detalle_cita > detalle_cita.id_detalle
+Ref: detalle_diagnostico.id_diagnostico > diagnostico.id_diagnostico
+Ref: atencion_tratamiento.id_detalle_cita > detalle_cita.id_detalle
+Ref: atencion_tratamiento.id_tratamiento > tratamiento.id_tratamiento
+Ref: "usuario"."id_usuario" ?<? "empleado"."id_usuario"
