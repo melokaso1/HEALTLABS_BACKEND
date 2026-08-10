@@ -2,10 +2,23 @@ namespace Domain.Entities
 {
     public class RolEntity
     {
-        public int IdRol { get; set; }
-        public string NombreRol { get; set; } = string.Empty;
+        public Guid Id { get; set; }
+        public string NombreRol { get; set; } = null!;
         public string? Descripcion { get; set; }
 
-        public ICollection<UsuarioEntity> Usuarios { get; set; } = [];
+        private RolEntity() { }
+
+        public RolEntity(string nombreRol, string? descripcion)
+        {
+            Id = Guid.NewGuid();
+            NombreRol = nombreRol;
+            Descripcion = descripcion;
+        }
+
+        public void update(string nombreRol, string? descripcion)
+        {
+            NombreRol = nombreRol;
+            Descripcion = descripcion;
+        }
     }
 }
