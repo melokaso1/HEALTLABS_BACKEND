@@ -2,9 +2,20 @@ namespace Domain.Entities
 {
     public class TipoDocumentoEntity
     {
-        public int IdTipoDocumento { get; set; }
-        public string Nombre { get; set; } = string.Empty;
+        public Guid Id { get; set; }
+        public string Nombre { get; set; } = null!;
 
-        public ICollection<PersonaEntity> Personas { get; set; } = [];
+        private TipoDocumentoEntity() { }
+
+        public TipoDocumentoEntity(string nombre)
+        {
+            Id = Guid.NewGuid();
+            Nombre = nombre;
+        }
+
+        public void update(string nombre)
+        {
+            Nombre = nombre;
+        }
     }
 }

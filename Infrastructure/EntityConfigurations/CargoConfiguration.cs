@@ -2,20 +2,19 @@ using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Domain.Entities.EntityConfigurations
-{
-    public class CargoConfig : IEntityTypeConfiguration<CargoEntity>
-    {
-        public void Configure(EntityTypeBuilder<CargoEntity> builder)
-        {
-            builder.ToTable("cargo");
-            builder.HasKey(x => x.IdCargo);
+namespace Infrastructure.EntityFrameworkCore;
 
-            builder.Property(x => x.IdCargo).HasColumnName("id");
-            builder.Property(x => x.Nombre).HasColumnName("nombre").IsRequired();
-            builder.Property(x => x.Codigo).HasColumnName("codigo");
-            builder.Property(x => x.Descripcion).HasColumnName("descripcion");
-            builder.Property(x => x.NivelJerarquico).HasColumnName("nivel_jerarquico");
-        }
+public class CargoConfig : IEntityTypeConfiguration<CargoEntity>
+{
+    public void Configure(EntityTypeBuilder<CargoEntity> builder)
+    {
+        builder.ToTable("cargo");
+
+        builder.HasKey(t => t.Id);
+
+        builder.Property(t => t.Nombre).IsRequired().HasMaxLength(100);
+        builder.Property(t => t.Codigo).HasMaxLength(50);
+        builder.Property(t => t.Descripcion).HasMaxLength(255);
+        builder.Property(t => t.NivelJerarquico);
     }
 }
