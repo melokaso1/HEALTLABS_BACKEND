@@ -1,17 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace Application.DTOs.AtencionTratamiento
 {
     public class CreateAtencionTratamientoDto
     {
         public Guid DetalleCitaId { get; set; }
         public Guid TratamientoId { get; set; }
-        public string? DosisPersonalizada { get; set; }
-        public string? FrecuenciaPersonalizada { get; set; }
-        public int DuracionDiasPersonalizada { get; set; }
-        public string? IndicacionesPersonalizadas { get; set; }
+        public string Dosis { get; set; } = string.Empty;
+        public string? Frecuencia { get; set; }
+        public int? DuracionDias { get; set; }
+        public string? Indicaciones { get; set; }
     }
 }

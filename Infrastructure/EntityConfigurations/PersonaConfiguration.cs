@@ -2,23 +2,33 @@ using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Infrastructure.EntityFrameworkCore;
+namespace Infrastructure.EntityConfigurations;
 
-public class PersonaConfig : IEntityTypeConfiguration<PersonaEntity>
+public class PersonaConfiguration : IEntityTypeConfiguration<PersonaEntity>
 {
     public void Configure(EntityTypeBuilder<PersonaEntity> builder)
     {
-        builder.ToTable("personas");
+        builder.ToTable("persona");
+        builder.HasKey(x => x.Id);
 
-        builder.HasKey(t => t.Id);
+        builder.Property(x => x.Nombre).IsRequired().HasMaxLength(100);
+        builder.Property(x => x.Apellido).IsRequired().HasMaxLength(100);
+        builder.Property(x => x.TipoDocumentoId).IsRequired();
+        builder.Property(x => x.NumeroDocumento).IsRequired().HasMaxLength(50);
+        builder.Property(x => x.FechaNacimiento);
+        builder.Property(x => x.SexoId);
+        builder.Property(x => x.FechaCreacion).IsRequired();
 
-        builder.Property(t => t.Nombre).IsRequired().HasMaxLength(100);
-        builder.Property(t => t.Apellido).IsRequired().HasMaxLength(100);
-        builder.Property(t => t.TipoDocumentoId);
-        builder.Property(t => t.NumeroDocumento).IsRequired().HasMaxLength(50);
-        builder.Property(t => t.Direccion).HasMaxLength(255);
-        builder.Property(t => t.Telefono).HasMaxLength(50);
-        builder.Property(t => t.FechaNacimiento);
-        builder.Property(t => t.Sexo).HasMaxLength(20);
+        builder.HasIndex(x => new { x.TipoDocumentoId, x.NumeroDocumento }).IsUnique();
+
+        builder.HasOne(x => x.TipoDocumento)
+            .WithMany()
+            .HasForeignKey(x => x.TipoDocumentoId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.Sexo)
+            .WithMany()
+            .HasForeignKey(x => x.SexoId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

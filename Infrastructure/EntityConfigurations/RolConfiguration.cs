@@ -2,17 +2,17 @@ using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Infrastructure.EntityFrameworkCore;
+namespace Infrastructure.EntityConfigurations;
 
-public class RolConfig : IEntityTypeConfiguration<RolEntity>
+public class RolConfiguration : IEntityTypeConfiguration<RolEntity>
 {
     public void Configure(EntityTypeBuilder<RolEntity> builder)
     {
         builder.ToTable("rol");
-
-        builder.HasKey(t => t.Id);
-
-        builder.Property(t => t.NombreRol).IsRequired().HasMaxLength(100);
-        builder.Property(t => t.Descripcion).HasMaxLength(255);
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.NombreRol).IsRequired().HasMaxLength(100);
+        builder.Property(x => x.Descripcion).HasMaxLength(255);
+        builder.Property(x => x.Activo).IsRequired();
+        builder.HasIndex(x => x.NombreRol).IsUnique();
     }
 }

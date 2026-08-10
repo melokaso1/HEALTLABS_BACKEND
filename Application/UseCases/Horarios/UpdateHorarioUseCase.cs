@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Application.UseCases.Horarios
+﻿namespace Application.UseCases.Horarios
 {
-    internal class UpdateHorarioUseCase
+    public class UpdateHorarioUseCase
     {
     }
 }

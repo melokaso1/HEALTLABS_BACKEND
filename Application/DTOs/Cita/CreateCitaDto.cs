@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace Application.DTOs.Cita
 {
     public class CreateCitaDto
@@ -10,11 +5,12 @@ namespace Application.DTOs.Cita
         public Guid PacienteId { get; set; }
         public Guid MedicoId { get; set; }
         public Guid EstadoCitaId { get; set; }
-        public DateTime Fecha { get; set; }
-        public TimeSpan HoraInicio { get; set; }
-        public TimeSpan HoraFin { get; set; }
-        public string? MotivoConsulta { get; set; }
+        public Guid TipoCitaId { get; set; }
+        public DateOnly Fecha { get; set; }
+        public TimeOnly HoraInicio { get; set; }
+        public TimeOnly HoraFin { get; set; }
+        public string MotivoConsulta { get; set; } = string.Empty;
         public string? Observaciones { get; set; }
-        public Guid IdUsuarioCreacion { get; set; }
+        public Guid UsuarioCreacionId { get; set; }
     }
 }

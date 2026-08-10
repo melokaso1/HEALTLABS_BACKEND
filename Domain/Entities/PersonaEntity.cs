@@ -5,40 +5,51 @@ namespace Domain.Entities
         public Guid Id { get; set; }
         public string Nombre { get; set; } = null!;
         public string Apellido { get; set; } = null!;
-        public Guid? TipoDocumentoId { get; set; }
+        public Guid TipoDocumentoId { get; set; }
         public string NumeroDocumento { get; set; } = null!;
-        public string? Direccion { get; set; }
-        public string? Telefono { get; set; }
         public DateOnly? FechaNacimiento { get; set; }
-        public string? Sexo { get; set; }
+        public Guid? SexoId { get; set; }
+        public DateTime FechaCreacion { get; set; }
+
+        public TipoDocumentoEntity? TipoDocumento { get; set; }
+        public SexoEntity? Sexo { get; set; }
+        public ICollection<PersonaTelefonoEntity> Telefonos { get; set; } = [];
+        public ICollection<PersonaDireccionEntity> Direcciones { get; set; } = [];
 
         private PersonaEntity() { }
 
-        public PersonaEntity(string nombre, string apellido, Guid? tipoDocumentoId, string numeroDocumento,
-            string? direccion, string? telefono, DateOnly? fechaNacimiento, string? sexo)
+        public PersonaEntity(
+            string nombre,
+            string apellido,
+            Guid tipoDocumentoId,
+            string numeroDocumento,
+            DateOnly? fechaNacimiento,
+            Guid? sexoId)
         {
             Id = Guid.NewGuid();
             Nombre = nombre;
             Apellido = apellido;
             TipoDocumentoId = tipoDocumentoId;
             NumeroDocumento = numeroDocumento;
-            Direccion = direccion;
-            Telefono = telefono;
             FechaNacimiento = fechaNacimiento;
-            Sexo = sexo;
+            SexoId = sexoId;
+            FechaCreacion = DateTime.UtcNow;
         }
 
-        public void update(string nombre, string apellido, Guid? tipoDocumentoId, string numeroDocumento,
-            string? direccion, string? telefono, DateOnly? fechaNacimiento, string? sexo)
+        public void Update(
+            string nombre,
+            string apellido,
+            Guid tipoDocumentoId,
+            string numeroDocumento,
+            DateOnly? fechaNacimiento,
+            Guid? sexoId)
         {
             Nombre = nombre;
             Apellido = apellido;
             TipoDocumentoId = tipoDocumentoId;
             NumeroDocumento = numeroDocumento;
-            Direccion = direccion;
-            Telefono = telefono;
             FechaNacimiento = fechaNacimiento;
-            Sexo = sexo;
+            SexoId = sexoId;
         }
     }
 }

@@ -2,10 +2,23 @@ namespace Domain.Entities
 {
     public class EspecialidadEntity
     {
-        public int IdEspecialidad { get; set; }
-        public string Nombre { get; set; } = string.Empty;
+        public Guid Id { get; set; }
+        public string Nombre { get; set; } = null!;
         public string? Descripcion { get; set; }
 
-        public ICollection<MedicoEntity> Medicos { get; set; } = [];
+        private EspecialidadEntity() { }
+
+        public EspecialidadEntity(string nombre, string? descripcion)
+        {
+            Id = Guid.NewGuid();
+            Nombre = nombre;
+            Descripcion = descripcion;
+        }
+
+        public void Update(string nombre, string? descripcion)
+        {
+            Nombre = nombre;
+            Descripcion = descripcion;
+        }
     }
 }

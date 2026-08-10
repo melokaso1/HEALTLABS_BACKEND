@@ -2,10 +2,23 @@ namespace Domain.Entities
 {
     public class EstadoCitaEntity
     {
-        public Guid IdEstadoCita { get; set; }
-        public string Codigo { get; set; } = string.Empty;
-        public string Descripcion { get; set; } = string.Empty;
+        public Guid Id { get; set; }
+        public string Codigo { get; set; } = null!;
+        public string? Descripcion { get; set; }
 
-        public ICollection<CitaEntity> Citas { get; set; } = [];
+        private EstadoCitaEntity() { }
+
+        public EstadoCitaEntity(string codigo, string? descripcion)
+        {
+            Id = Guid.NewGuid();
+            Codigo = codigo;
+            Descripcion = descripcion;
+        }
+
+        public void Update(string codigo, string? descripcion)
+        {
+            Codigo = codigo;
+            Descripcion = descripcion;
+        }
     }
 }

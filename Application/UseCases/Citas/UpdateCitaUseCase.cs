@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Application.UseCases.Citas
+﻿namespace Application.UseCases.Citas
 {
-    internal class UpdateCitaUseCase
+    public class UpdateCitaUseCase
     {
     }
 }

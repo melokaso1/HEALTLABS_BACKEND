@@ -2,16 +2,31 @@ namespace Domain.Entities
 {
     public class TratamientoEntity
     {
-        public Guid IdTratamiento { get; set; }
-        public string Codigo { get; set; } = string.Empty;
-        public string Nombre { get; set; } = string.Empty;
+        public Guid Id { get; set; }
+        public string? Codigo { get; set; }
+        public string Nombre { get; set; } = null!;
         public string? Descripcion { get; set; }
-        public string? Dosis { get; set; }
-        public string? Frecuencia { get; set; }
-        public int? DuracionDias { get; set; }
-        public string? Indicaciones { get; set; }
         public bool Activo { get; set; }
 
-        public ICollection<AtencionTratamientoEntity> AtencionesTratamiento { get; set; } = [];
+        public TratamientoPosologiaEntity? Posologia { get; set; }
+
+        private TratamientoEntity() { }
+
+        public TratamientoEntity(string? codigo, string nombre, string? descripcion, bool activo)
+        {
+            Id = Guid.NewGuid();
+            Codigo = codigo;
+            Nombre = nombre;
+            Descripcion = descripcion;
+            Activo = activo;
+        }
+
+        public void Update(string? codigo, string nombre, string? descripcion, bool activo)
+        {
+            Codigo = codigo;
+            Nombre = nombre;
+            Descripcion = descripcion;
+            Activo = activo;
+        }
     }
 }
