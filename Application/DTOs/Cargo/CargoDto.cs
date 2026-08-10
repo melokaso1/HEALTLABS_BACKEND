@@ -7,7 +7,7 @@ namespace Application.DTOs.Cargo
 {
     public class CargoDto
     {
-        public Guid IdCargo { get; set; }
+        public Guid CargoId { get; set; }
         public string Nombre { get; set; } = string.Empty;
         public string Codigo { get; set; } = string.Empty;
         public string? Descripcion { get; set; }

@@ -9,7 +9,7 @@ namespace Application.DTOs.Persona
     {
         public string Nombre { get; set; } = string.Empty;
         public string Apellido { get; set; } = string.Empty;
-        public Guid IdTipoDocumento { get; set; }
+        public Guid TipoDocumentoId { get; set; }
         public string NumeroDocumento { get; set; } = string.Empty;
         public string? Direccion { get; set; }
         public string? Telefono { get; set; }

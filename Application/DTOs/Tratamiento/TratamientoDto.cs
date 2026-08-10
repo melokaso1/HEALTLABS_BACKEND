@@ -7,7 +7,7 @@ namespace Application.DTOs.Tratamiento
 {
     public class TratamientoDto
     {
-        public Guid IdTratamiento { get; set; }
+        public Guid TratamientoId { get; set; }
         public string Codigo { get; set; } = string.Empty;
         public string Nombre { get; set; } = string.Empty;
         public string? Descripcion { get; set; }

@@ -7,8 +7,8 @@ namespace Application.DTOs.DetalleDiagnostico
 {
     public class CreateDetalleDiagnosticoDto
     {
-        public Guid IdDetalleCita { get; set; }
-        public Guid IdDiagnostico { get; set; }
+        public Guid DetalleCitaId { get; set; }
+        public Guid DiagnosticoId { get; set; }
         public bool Principal { get; set; }
     }
 }

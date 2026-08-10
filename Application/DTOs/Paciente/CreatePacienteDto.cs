@@ -7,6 +7,6 @@ namespace Application.DTOs.Paciente
 {
     public class CreatePacienteDto
     {
-        public Guid IdPersona { get; set; }
+        public Guid PersonaId { get; set; }
     }
 }
