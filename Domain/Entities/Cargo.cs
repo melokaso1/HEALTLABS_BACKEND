@@ -7,5 +7,7 @@ namespace Domain.Entities
         public string? Codigo { get; set; }
         public string? Descripcion { get; set; }
         public int? NivelJerarquico { get; set; }
+
+        public ICollection<Empleado> Empleados { get; set; } = [];
     }
 }

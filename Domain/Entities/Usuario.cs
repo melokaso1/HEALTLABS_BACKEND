@@ -10,5 +10,6 @@ namespace Domain.Entities
         public string? JwtCode { get; set; }
 
         public Rol? Rol { get; set; }
+        public ICollection<Empleado> Empleados { get; set; } = [];
     }
 }

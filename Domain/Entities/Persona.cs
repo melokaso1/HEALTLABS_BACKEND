@@ -13,5 +13,7 @@ namespace Domain.Entities
         public string? Sexo { get; set; }
 
         public TipoDocumento? TipoDocumento { get; set; }
+        public ICollection<Empleado> Empleados { get; set; } = [];
+        public ICollection<Paciente> Pacientes { get; set; } = [];
     }
 }
