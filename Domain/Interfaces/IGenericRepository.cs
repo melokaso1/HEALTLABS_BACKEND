@@ -9,7 +9,7 @@ namespace Domain.Interfaces
         public Task<TEntity> AddAsync(TEntity entity);
         public Task<TEntity> UpdateAsync(TEntity entity);
         public Task DeleteAsync(TEntity entity);
-        public Task<TEntity> GetEntityByIdAsync();
+        public Task<TEntity> GetEntityByIdAsync(Guid id);
         public Task<IEnumerable<TEntity>> GetAllEntitiesAsync();
     }
 }

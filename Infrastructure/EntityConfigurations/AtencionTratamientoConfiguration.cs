@@ -1,3 +1,7 @@
+using Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
 namespace Domain.Entities.EntityConfigurations
 {
     public class AtencionTratamientoConfig : IEntityTypeConfiguration<AtencionTratamientoEntity>
@@ -5,8 +9,9 @@ namespace Domain.Entities.EntityConfigurations
         public void Configure(EntityTypeBuilder<AtencionTratamientoEntity> builder)
         {
             builder.ToTable("AtencionTratamiento");
-            
-            builder.Property(x => x.IdAtencionTratamiento).HasColumnName("id_atencion_tratamiento");
+            builder.HasKey(t => t.Id);
+
+            builder.Property(x => x.Id).HasColumnName("id");
             builder.Property(x => x.IdDetalleCita).HasColumnName("id_detalle_cita").IsRequired();
             builder.Property(x => x.IdTratamiento).HasColumnName("id_tratamiento").IsRequired();
             builder.Property(x => x.DosisPersonalizada).HasColumnName("dosis_personalizada");
