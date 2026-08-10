@@ -10,8 +10,9 @@ namespace Domain.Entities
         public DateOnly? FechaRetiro { get; set; }
         public bool Activo { get; set; }
 
-        public Persona? Persona { get; set; }
+        public PersonaEntity? Persona { get; set; }
         public Usuario? Usuario { get; set; }
         public Cargo? Cargo { get; set; }
+        public ICollection<MedicoEntity> Medicos { get; set; } = [];
     }
 }

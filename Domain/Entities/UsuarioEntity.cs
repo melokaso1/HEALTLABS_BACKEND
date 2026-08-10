@@ -9,7 +9,7 @@ namespace Domain.Entities
         public bool Activo { get; set; }
         public string? JwtCode { get; set; }
 
-        public Rol? Rol { get; set; }
+        public RolEntity? Rol { get; set; }
         public ICollection<Empleado> Empleados { get; set; } = [];
     }
 }

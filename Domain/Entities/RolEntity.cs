@@ -1,6 +1,6 @@
 namespace Domain.Entities
 {
-    public class Rol
+    public class RolEntity
     {
         public int IdRol { get; set; }
         public string NombreRol { get; set; } = string.Empty;
