@@ -9,7 +9,7 @@ namespace Domain.Entities
         public TimeOnly Retorno { get; private set; }
         public bool Descanso { get; private set; }
 
-        //public MedicoEntity? Medico { get; private set; } // Falta entidad de medico
+        public MedicoEntity? Medico { get; set; }
 
         private HorarioEntity() { }
 
@@ -33,5 +33,6 @@ namespace Domain.Entities
             Retorno = retorno;
             Descanso = descanso;
         }
+
     }
 }

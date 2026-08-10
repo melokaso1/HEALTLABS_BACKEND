@@ -6,7 +6,7 @@ namespace Domain.Entities
         public string Codigo { get; private set; } = null!;
         public string Descripcion { get; private set; } = null!;
 
-        public ICollection<CitaEntity> Citas { get; private set; } = [];
+        public ICollection<CitaEntity> Citas { get; set; } = [];
 
         private EstadoCitaEntity() { }
 

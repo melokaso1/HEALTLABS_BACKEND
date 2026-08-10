@@ -7,8 +7,8 @@ namespace Application.DTOs.Medico
 {
     public class MedicoDto
     {
-        public Guid IdMedico { get; set; }
-        public Guid IdEmpleado { get; set; }
-        public Guid IdEspecialidad { get; set; }
+        public Guid MedicoId { get; set; }
+        public Guid EmpleadoId { get; set; }
+        public Guid EspecialidadId { get; set; }
     }
 }

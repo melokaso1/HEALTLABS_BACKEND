@@ -7,7 +7,7 @@ namespace Application.DTOs.Especialidad
 {
     public class EspecialidadDto
     {
-        public Guid IdEspecialidad { get; set; }
+        public Guid EspecialidadId { get; set; }
         public string Nombre { get; set; } = string.Empty;
         public string? Descripcion { get; set; }
     }

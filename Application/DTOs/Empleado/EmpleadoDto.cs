@@ -7,10 +7,10 @@ namespace Application.DTOs.Empleado
 {
     public class EmpleadoDto
     {
-        public Guid IdEmpleado { get; set; }
-        public Guid IdPersona { get; set; }
-        public Guid IdUsuario { get; set; }
-        public Guid IdCargo { get; set; }
+        public Guid EmpleadoId { get; set; }
+        public Guid PersonaId { get; set; }
+        public Guid UsuarioId { get; set; }
+        public Guid CargoId { get; set; }
         public DateTime FechaIngreso { get; set; }
         public DateTime? FechaRetiro { get; set; }
         public bool Activo { get; set; }

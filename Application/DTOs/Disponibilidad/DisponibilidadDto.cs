@@ -7,8 +7,8 @@ namespace Application.DTOs.Disponibilidad
 {
     public class DisponibilidadDto
     {
-        public Guid IdDisponibilidad { get; set; }
-        public Guid IdMedico { get; set; }
+        public Guid DisponibilidadId { get; set; }
+        public Guid MedicoId { get; set; }
         public int DiaSemana { get; set; }
         public TimeSpan HoraInicio { get; set; }
         public TimeSpan HoraFin { get; set; }

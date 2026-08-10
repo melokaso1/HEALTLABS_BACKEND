@@ -7,7 +7,7 @@ namespace Application.DTOs.TipoDocumento
 {
     public class TipoDocumentoDto
     {
-        public Guid IdTipoDocumento { get; set; }
+        public Guid TipoDocumentoId { get; set; }
         public string Nombre { get; set; } = string.Empty;
     }
 }

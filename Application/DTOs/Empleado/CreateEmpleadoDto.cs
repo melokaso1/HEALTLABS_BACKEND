@@ -7,9 +7,9 @@ namespace Application.DTOs.Empleado
 {
     public class CreateEmpleadoDto
     {
-        public Guid IdPersona { get; set; }
-        public Guid IdUsuario { get; set; }
-        public Guid IdCargo { get; set; }
+        public Guid PersonaId { get; set; }
+        public Guid UsuarioId { get; set; }
+        public Guid CargoId { get; set; }
         public DateTime FechaIngreso { get; set; }
     }
 }

@@ -7,7 +7,7 @@ namespace Application.DTOs.Usuario
 {
     public class CreateUsuarioDto
     {
-        public Guid IdRol { get; set; }
+        public Guid RolId { get; set; }
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
     }
