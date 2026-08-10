@@ -2,7 +2,7 @@ namespace Domain.Entities
 {
     public class CitaEntity
     {
-        public Guid IdCita { get; set; }
+        public Guid Id { get; set; }
         public int PacienteId { get; set; }
         public int ProfesionalId { get; set; }
         public int EstadoCitaId { get; set; }
@@ -14,7 +14,33 @@ namespace Domain.Entities
         public int IdUsuarioCreacion { get; set; }
         public DateTime FechaCreacion { get; set; }
 
-        public EstadoCitaEntity? EstadoCita { get; set; }
-        public ICollection<DetalleCitaEntity> DetallesCita { get; set; } = [];
+        private CitaEntity() { }
+
+        public CitaEntity(
+                         int pacienteId,
+                         int profesionalId,
+                         int estadoCitaId,
+                         DateOnly fecha,
+                         TimeOnly horaInicio,
+                         TimeOnly horaFin,
+                         string motivoConsulta,
+                         string observaciones,
+                         int idUsuarioCreacion,
+                         DateTime fechaCreacion
+           )
+        {
+            Id = Guid.NewGuid();
+            PacienteId = pacienteId;
+            ProfesionalId = profesionalId;
+            EstadoCitaId = estadoCitaId;
+            Fecha = fecha;
+            HoraInicio = horaInicio;
+            HoraFin = horaFin;
+            MotivoConsulta = motivoConsulta;
+            Observaciones = observaciones;
+            IdUsuarioCreacion = idUsuarioCreacion;
+            FechaCreacion = fechaCreacion;
+
+        }
     }
 }
