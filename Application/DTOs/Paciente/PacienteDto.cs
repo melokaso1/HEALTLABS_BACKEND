@@ -7,8 +7,8 @@ namespace Application.DTOs.Paciente
 {
     public class PacienteDto
     {
-        public Guid IdPaciente { get; set; }
-        public Guid IdPersona { get; set; }
+        public Guid PacienteId { get; set; }
+        public Guid PersonaId { get; set; }
         public bool Activo { get; set; }
     }
 }

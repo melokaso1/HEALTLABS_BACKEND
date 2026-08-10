@@ -7,7 +7,7 @@ namespace Application.DTOs.BloqueHorario
 {
     public class CreateBloqueHorarioDto
     {
-        public Guid IdDisponibilidad { get; set; }
+        public Guid DisponibilidadId { get; set; }
         public DateTime Fecha { get; set; }
         public TimeSpan HoraInicio { get; set; }
         public TimeSpan HoraFin { get; set; }
