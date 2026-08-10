@@ -7,9 +7,9 @@ namespace Application.DTOs.Cita
 {
     public class CreateCitaDto
     {
-        public Guid IdPaciente { get; set; }
-        public Guid IdMedico { get; set; }
-        public Guid IdEstadoCita { get; set; }
+        public Guid PacienteId { get; set; }
+        public Guid MedicoId { get; set; }
+        public Guid EstadoCitaId { get; set; }
         public DateTime Fecha { get; set; }
         public TimeSpan HoraInicio { get; set; }
         public TimeSpan HoraFin { get; set; }

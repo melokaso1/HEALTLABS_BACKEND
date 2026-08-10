@@ -7,8 +7,8 @@ namespace Application.DTOs.Usuario
 {
     public class UsuarioDto
     {
-        public Guid IdUsuario { get; set; }
-        public Guid IdRol { get; set; }
+        public Guid UsuarioId { get; set; }
+        public Guid RolId { get; set; }
         public string Email { get; set; } = string.Empty;
         public bool Activo { get; set; }
     }

@@ -7,7 +7,7 @@ namespace Application.DTOs.Diagnostico
 {
     public class DiagnosticoDto
     {
-        public Guid IdDiagnostico { get; set; }
+        public Guid DiagnosticoId { get; set; }
         public string CodigoCie10 { get; set; } = string.Empty;
         public string Descripcion { get; set; } = string.Empty;
         public bool Activo { get; set; }

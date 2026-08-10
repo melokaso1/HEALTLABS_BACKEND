@@ -7,8 +7,8 @@ namespace Application.DTOs.AtencionTratamiento
 {
     public class CreateAtencionTratamientoDto
     {
-        public Guid IdDetalleCita { get; set; }
-        public Guid IdTratamiento { get; set; }
+        public Guid DetalleCitaId { get; set; }
+        public Guid TratamientoId { get; set; }
         public string? DosisPersonalizada { get; set; }
         public string? FrecuenciaPersonalizada { get; set; }
         public int DuracionDiasPersonalizada { get; set; }

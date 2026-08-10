@@ -7,8 +7,8 @@ namespace Application.DTOs.DetalleCita
 {
     public class CreateDetalleCitaDto
     {
-        public Guid IdCita { get; set; }
-        public Guid IdProfesional { get; set; }
+        public Guid CitaId { get; set; }
+        public Guid ProfesionalId { get; set; }
         public string? NotaAtencion { get; set; }
         public string? ResumenConsulta { get; set; }
     }
