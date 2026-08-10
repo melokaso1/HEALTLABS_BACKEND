@@ -1,18 +1,21 @@
 namespace Infrastructure.Persistence.Context;
+using Microsoft.EntityFrameworkCore;
+using Domain.Entities;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-    public DbSet<Cita> Citas { get; set; }
-    public DbSet<DetalleCita> DetallesCita { get; set; }
-    public DbSet<DetalleDiagnostico> DetallesDiagnostico { get; set; }
-    public DbSet<DetalleTratamiento> DetallesTratamiento { get; set; }
-    public DbSet<Diagnostico> Diagnosticos { get; set; }
-    public DbSet<EstadoCita> EstadosCita { get; set; }
-    public DbSet<Paciente> Pacientes { get; set; }
-    public DbSet<Profesional> Profesionales { get; set; }
-    public DbSet<Tratamiento> Tratamientos { get; set; }
+    public DbSet<CitaEntity> Citas { get; set; }
+    public DbSet<DetalleCitaEntity> DetallesCita { get; set; }
+    public DbSet<DetalleDiagnosticoEntity> DetallesDiagnostico { get; set; }
+    public DbSet<AtencionTratamientoEntity> AtencionesTratamiento { get; set; }
+    public DbSet<DiagnosticoEntity> Diagnosticos { get; set; }
+    public DbSet<EstadoCitaEntity> EstadosCita { get; set; }
+    
+    //public DbSet<Paciente> Pacientes { get; set; }
+    //public DbSet<Profesional> Profesionales { get; set; }
+    public DbSet<TratamientoEntity> Tratamientos { get; set; }
+    public DbSet<HorarioEntity> Horarios { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

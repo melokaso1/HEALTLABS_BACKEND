@@ -1,12 +1,29 @@
 namespace Domain.Entities
 {
-    public class Diagnostico
+    public class DiagnosticoEntity
     {
-        public Guid IdDiagnostico { get; set; }
-        public string CodigoCie10 { get; set; } = string.Empty;
-        public string Descripcion { get; set; } = string.Empty;
-        public bool Activo { get; set; }
+        public Guid Id { get; private set; }
+        public string CodigoCie10 { get; private set; } = null!;
+        public string Descripcion { get; private set; } = null!;
+        public bool Activo { get; private set; }
 
-        public ICollection<DetalleDiagnostico> DetallesDiagnostico { get; set; } = [];
+        public ICollection<DetalleDiagnosticoEntity> DetallesDiagnostico { get; private set; } = [];
+
+        private DiagnosticoEntity() { }
+
+        public DiagnosticoEntity(string codigoCie10, string descripcion, bool activo)
+        {
+            Id = Guid.NewGuid();
+            CodigoCie10 = codigoCie10;
+            Descripcion = descripcion;
+            Activo = activo;
+        }
+
+        public void Update(string codigoCie10, string descripcion, bool activo)
+        {
+            CodigoCie10 = codigoCie10;
+            Descripcion = descripcion;
+            Activo = activo;
+        }
     }
 }

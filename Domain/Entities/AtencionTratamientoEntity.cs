@@ -2,29 +2,30 @@ namespace Domain.Entities
 {
     public class AtencionTratamientoEntity
     {
-        public Guid Id { get; set; }
-        public int DetalleCitaId { get; set; }
-        public int TratamientoId { get; set; }
-        public string Dosis { get; set; } = null!;
-        public string? Frecuencia { get; set; } = null!;
-        public int? DuracionDias { get; set; }
-        public string? Indicaciones { get; set; }
+        public Guid Id { get; private set; }
+        public Guid DetalleCitaId { get; private set; }
+        public Guid TratamientoId { get; private set; }
+        public string Dosis { get; private set; } = null!;
+        public string? Frecuencia { get; private set; }
+        public int? DuracionDias { get; private set; }
+        public string? Indicaciones { get; private set; }
 
         private AtencionTratamientoEntity() { }
-
-        public AtencionTratamientoEntity(int DetalleCita, int TratamientoId, string dosis, string frecuencia, int? duracionDias, string? indicaciones)
+        public AtencionTratamientoEntity(Guid detalleCitaId, Guid tratamientoId, string dosis, string? frecuencia, int? duracionDias, string? indicaciones)
         {
             Id = Guid.NewGuid();
-            DetalleCitaId = DetalleCita;
+            DetalleCitaId = detalleCitaId;
+            TratamientoId = tratamientoId; // <-- ¡Faltaba esta línea!
             Dosis = dosis;
             Frecuencia = frecuencia;
             DuracionDias = duracionDias;
             Indicaciones = indicaciones;
         }
 
-        public void update(int DetalleCita, int TratamientoId, string dosis, string frecuencia, int? duracionDias, string? indicaciones)
+        public void Update(Guid detalleCitaId, Guid tratamientoId, string dosis, string? frecuencia, int? duracionDias, string? indicaciones)
         {
-            DetalleCitaId = DetalleCita;
+            DetalleCitaId = detalleCitaId;
+            TratamientoId = tratamientoId; // <-- ¡Faltaba esta línea!
             Dosis = dosis;
             Frecuencia = frecuencia;
             DuracionDias = duracionDias;
