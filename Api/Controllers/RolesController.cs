@@ -13,38 +13,38 @@ namespace Api.Controllers;
 [Authorize(Roles = AppRoles.Admin)]
 public sealed class RolesController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly AppDbContext _context;
 
-    public RolesController(ApplicationDbContext context)
+    public RolesController(AppDbContext context)
     {
         _context = context;
     }
 
-    // GET: api/Roles
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
         var roles = await _context.Roles
-            .Select(r => new RolDto
+            .Select(r => new CreateRolDto
             {
-                IdRol = r.IdRol,
-                Nombre = r.Nombre
+                NombreRol = r.NombreRol,
+                Descripcion = r.Descripcion,
+                Activo = r.Activo
             })
             .ToListAsync();
 
         return Ok(roles);
     }
 
-    // GET: api/Roles/{id}
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
         var rol = await _context.Roles
-            .Where(r => r.IdRol == id)
-            .Select(r => new RolDto
+            .Where(r => r.Id == id)
+            .Select(r => new CreateRolDto
             {
-                IdRol = r.IdRol,
-                Nombre = r.Nombre
+                NombreRol = r.NombreRol,
+                Descripcion = r.Descripcion,
+                Activo = r.Activo
             })
             .FirstOrDefaultAsync();
 
@@ -57,32 +57,37 @@ public sealed class RolesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateRolDto request)
     {
-        var nuevoRol = new Rol
-        {
-            IdRol = Guid.NewGuid(),
-            Nombre = request.Nombre
-        };
+        var nuevoRol = new RolEntity(
+            nombreRol: request.NombreRol,
+            descripcion: request.Descripcion,
+            activo: request.Activo
+        );
 
         _context.Roles.Add(nuevoRol);
         await _context.SaveChangesAsync();
 
-        var rolDto = new RolDto
+        var rolDto = new CreateRolDto
         {
-            IdRol = nuevoRol.IdRol,
-            Nombre = nuevoRol.Nombre
+            NombreRol = nuevoRol.NombreRol,
+            Descripcion = nuevoRol.Descripcion,
+            Activo = nuevoRol.Activo
         };
 
-        return CreatedAtAction(nameof(GetById), new { id = rolDto.IdRol }, rolDto);
+        return CreatedAtAction(nameof(GetById), new { id = nuevoRol.Id }, rolDto);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] CreateRolDto request)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateRolDto request)
     {
         var rol = await _context.Roles.FindAsync(id);
         if (rol is null)
             return NotFound();
 
-        rol.Nombre = request.Nombre;
+        rol.Update(
+            nombreRol: request.NombreRol,
+            descripcion: request.Descripcion,
+            activo: request.Activo
+        );
 
         await _context.SaveChangesAsync();
         return NoContent();
@@ -95,9 +100,13 @@ public sealed class RolesController : ControllerBase
         if (rol is null)
             return NotFound();
 
-        _context.Roles.Remove(rol);
-        await _context.SaveChangesAsync();
+        rol.Update(
+            nombreRol: rol.NombreRol,
+            descripcion: rol.Descripcion,
+            activo: false
+        );
 
+        await _context.SaveChangesAsync();
         return NoContent();
     }
 }

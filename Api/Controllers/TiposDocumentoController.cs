@@ -13,21 +13,21 @@ namespace Api.Controllers;
 [Authorize(Roles = AppRoles.Admin)]
 public sealed class TiposDocumentoController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly AppDbContext _context;
 
-    public TiposDocumentoController(ApplicationDbContext context)
+    public TiposDocumentoController(AppDbContext context)
     {
         _context = context;
     }
 
     [HttpGet]
-    [AllowAnonymous] 
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll()
     {
         var tiposDocumento = await _context.TiposDocumento
-            .Select(td => new TipoDocumentoDto
+            .Select(td => new CreateTipoDocumentoDto
             {
-                IdTipoDocumento = td.IdTipoDocumento,
+                Codigo = td.Codigo,
                 Nombre = td.Nombre
             })
             .ToListAsync();
@@ -39,10 +39,10 @@ public sealed class TiposDocumentoController : ControllerBase
     public async Task<IActionResult> GetById(Guid id)
     {
         var tipoDocumento = await _context.TiposDocumento
-            .Where(td => td.IdTipoDocumento == id)
-            .Select(td => new TipoDocumentoDto
+            .Where(td => td.Id == id)
+            .Select(td => new CreateTipoDocumentoDto
             {
-                IdTipoDocumento = td.IdTipoDocumento,
+                Codigo = td.Codigo,
                 Nombre = td.Nombre
             })
             .FirstOrDefaultAsync();
@@ -56,32 +56,34 @@ public sealed class TiposDocumentoController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTipoDocumentoDto request)
     {
-        var nuevoTipoDocumento = new TipoDocumento
-        {
-            IdTipoDocumento = Guid.NewGuid(),
-            Nombre = request.Nombre
-        };
+        var nuevoTipoDocumento = new TipoDocumentoEntity(
+            codigo: request.Codigo,
+            nombre: request.Nombre
+        );
 
         _context.TiposDocumento.Add(nuevoTipoDocumento);
         await _context.SaveChangesAsync();
 
-        var tipoDocumentoDto = new TipoDocumentoDto
+        var tipoDocumentoDto = new CreateTipoDocumentoDto
         {
-            IdTipoDocumento = nuevoTipoTipoDocumento.IdTipoDocumento,
+            Codigo = nuevoTipoDocumento.Codigo,
             Nombre = nuevoTipoDocumento.Nombre
         };
 
-        return CreatedAtAction(nameof(GetById), new { id = tipoDocumentoDto.IdTipoDocumento }, tipoDocumentoDto);
+        return CreatedAtAction(nameof(GetById), new { id = nuevoTipoDocumento.Id }, tipoDocumentoDto);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] CreateTipoDocumentoDto request)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTipoDocumentoDto request)
     {
         var tipoDocumento = await _context.TiposDocumento.FindAsync(id);
         if (tipoDocumento is null)
             return NotFound();
 
-        tipoDocumento.Nombre = request.Nombre;
+        tipoDocumento.Update(
+            codigo: request.Codigo,
+            nombre: request.Nombre
+        );
 
         await _context.SaveChangesAsync();
         return NoContent();

@@ -10,12 +10,12 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Admin)] 
+[Authorize(Roles = AppRoles.Admin)]
 public sealed class CargosController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly AppDbContext _context;
 
-    public CargosController(ApplicationDbContext context)
+    public CargosController(AppDbContext context)
     {
         _context = context;
     }
@@ -24,10 +24,12 @@ public sealed class CargosController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var cargos = await _context.Cargos
-            .Select(c => new CargoDto
+            .Select(c => new CreateCargoDto
             {
-                IdCargo = c.IdCargo,
-                Nombre = c.Nombre
+                Codigo = c.Codigo,
+                Nombre = c.Nombre,
+                Descripcion = c.Descripcion,
+                NivelJerarquico = c.NivelJerarquico
             })
             .ToListAsync();
 
@@ -38,11 +40,13 @@ public sealed class CargosController : ControllerBase
     public async Task<IActionResult> GetById(Guid id)
     {
         var cargo = await _context.Cargos
-            .Where(c => c.IdCargo == id)
-            .Select(c => new CargoDto
+            .Where(c => c.Id == id)
+            .Select(c => new CreateCargoDto
             {
-                IdCargo = c.IdCargo,
-                Nombre = c.Nombre
+                Codigo = c.Codigo,
+                Nombre = c.Nombre,
+                Descripcion = c.Descripcion,
+                NivelJerarquico = c.NivelJerarquico
             })
             .FirstOrDefaultAsync();
 
@@ -55,32 +59,40 @@ public sealed class CargosController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateCargoDto request)
     {
-        var nuevoCargo = new Cargo
-        {
-            IdCargo = Guid.NewGuid(),
-            Nombre = request.Nombre
-        };
+        var nuevoCargo = new CargoEntity(
+            codigo: request.Codigo,
+            nombre: request.Nombre,
+            descripcion: request.Descripcion,
+            nivelJerarquico: request.NivelJerarquico
+        );
 
         _context.Cargos.Add(nuevoCargo);
         await _context.SaveChangesAsync();
 
-        var cargoDto = new CargoDto
+        var cargoDto = new CreateCargoDto
         {
-            IdCargo = nuevoCargo.IdCargo,
-            Nombre = nuevoCargo.Nombre
+            Codigo = nuevoCargo.Codigo,
+            Nombre = nuevoCargo.Nombre,
+            Descripcion = nuevoCargo.Descripcion,
+            NivelJerarquico = nuevoCargo.NivelJerarquico
         };
 
-        return CreatedAtAction(nameof(GetById), new { id = cargoDto.IdCargo }, cargoDto);
+        return CreatedAtAction(nameof(GetById), new { id = nuevoCargo.Id }, cargoDto);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] CreateCargoDto request)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCargoDto request)
     {
         var cargo = await _context.Cargos.FindAsync(id);
         if (cargo is null)
             return NotFound();
 
-        cargo.Nombre = request.Nombre;
+        cargo.Update(
+            codigo: request.Codigo,
+            nombre: request.Nombre,
+            descripcion: request.Descripcion,
+            nivelJerarquico: request.NivelJerarquico
+        );
 
         await _context.SaveChangesAsync();
         return NoContent();

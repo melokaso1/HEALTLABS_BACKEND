@@ -1,7 +1,7 @@
 using Api.Security;
 using Application.DTOs.Persona;
 using Domain.Entities;
-using Infrastructure.Persistence.Context; 
+using Infrastructure.Persistence.Context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,12 +10,12 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Staff)] 
+[Authorize(Roles = AppRoles.Staff)]
 public sealed class PersonasController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly AppDbContext _context;
 
-    public PersonasController(ApplicationDbContext context)
+    public PersonasController(AppDbContext context)
     {
         _context = context;
     }
@@ -25,15 +25,14 @@ public sealed class PersonasController : ControllerBase
     {
         var personas = await _context.Personas
             .Include(p => p.TipoDocumento)
-            .Select(p => new PersonaDto
+            .Select(p => new CreatePersonaDto
             {
-                IdPersona = p.IdPersona,
                 Nombre = p.Nombre,
                 Apellido = p.Apellido,
+                TipoDocumentoId = p.TipoDocumentoId,
                 NumeroDocumento = p.NumeroDocumento,
-                Telefono = p.Telefono,
-                Email = p.Email,
-                IdTipoDocumento = p.IdTipoDocumento
+                FechaNacimiento = p.FechaNacimiento,
+                SexoId = p.SexoId
             })
             .ToListAsync();
 
@@ -44,16 +43,15 @@ public sealed class PersonasController : ControllerBase
     public async Task<IActionResult> GetById(Guid id)
     {
         var persona = await _context.Personas
-            .Where(p => p.IdPersona == id)
-            .Select(p => new PersonaDto
+            .Where(p => p.Id == id)
+            .Select(p => new CreatePersonaDto
             {
-                IdPersona = p.IdPersona,
                 Nombre = p.Nombre,
                 Apellido = p.Apellido,
+                TipoDocumentoId = p.TipoDocumentoId,
                 NumeroDocumento = p.NumeroDocumento,
-                Telefono = p.Telefono,
-                Email = p.Email,
-                IdTipoDocumento = p.IdTipoDocumento
+                FechaNacimiento = p.FechaNacimiento,
+                SexoId = p.SexoId
             })
             .FirstOrDefaultAsync();
 
@@ -66,62 +64,75 @@ public sealed class PersonasController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreatePersonaDto request)
     {
-        var tipoDocExiste = await _context.TiposDocumento.AnyAsync(td => td.IdTipoDocumento == request.IdTipoDocumento);
+        var tipoDocExiste = await _context.TiposDocumento.AnyAsync(td => td.Id == request.TipoDocumentoId);
         if (!tipoDocExiste)
             return BadRequest("El tipo de documento especificado no existe.");
 
-        var nuevaPersona = new Persona
+        if (request.SexoId.HasValue)
         {
-            IdPersona = Guid.NewGuid(),
-            Nombre = request.Nombre,
-            Apellido = request.Apellido,
-            NumeroDocumento = request.NumeroDocumento,
-            Telefono = request.Telefono,
-            Email = request.Email,
-            IdTipoDocumento = request.IdTipoDocumento
-        };
+            var sexoExiste = await _context.Sexos.AnyAsync(s => s.Id == request.SexoId.Value);
+            if (!sexoExiste)
+                return BadRequest("El sexo especificado no existe.");
+        }
+
+        var nuevaPersona = new PersonaEntity(
+            nombre: request.Nombre,
+            apellido: request.Apellido,
+            tipoDocumentoId: request.TipoDocumentoId,
+            numeroDocumento: request.NumeroDocumento,
+            fechaNacimiento: request.FechaNacimiento,
+            sexoId: request.SexoId
+        );
 
         _context.Personas.Add(nuevaPersona);
         await _context.SaveChangesAsync();
 
-        var personaDto = new PersonaDto
+        var personaDto = new CreatePersonaDto
         {
-            IdPersona = nuevaPersona.IdPersona,
             Nombre = nuevaPersona.Nombre,
             Apellido = nuevaPersona.Apellido,
+            TipoDocumentoId = nuevaPersona.TipoDocumentoId,
             NumeroDocumento = nuevaPersona.NumeroDocumento,
-            Telefono = nuevaPersona.Telefono,
-            Email = nuevaPersona.Email,
-            IdTipoDocumento = nuevaPersona.IdTipoDocumento
+            FechaNacimiento = nuevaPersona.FechaNacimiento,
+            SexoId = nuevaPersona.SexoId
         };
 
-        return CreatedAtAction(nameof(GetById), new { id = personaDto.IdPersona }, personaDto);
+        return CreatedAtAction(nameof(GetById), new { id = nuevaPersona.Id }, personaDto);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] CreatePersonaDto request)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePersonaDto request)
     {
         var persona = await _context.Personas.FindAsync(id);
         if (persona is null)
             return NotFound();
 
-        var tipoDocExiste = await _context.TiposDocumento.AnyAsync(td => td.IdTipoDocumento == request.IdTipoDocumento);
+        var tipoDocExiste = await _context.TiposDocumento.AnyAsync(td => td.Id == request.TipoDocumentoId);
         if (!tipoDocExiste)
             return BadRequest("El tipo de documento especificado no existe.");
 
-        persona.Nombre = request.Nombre;
-        persona.Apellido = request.Apellido;
-        persona.NumeroDocumento = request.NumeroDocumento;
-        persona.Telefono = request.Telefono;
-        persona.Email = request.Email;
-        persona.IdTipoDocumento = request.IdTipoDocumento;
+        if (request.SexoId.HasValue)
+        {
+            var sexoExiste = await _context.Sexos.AnyAsync(s => s.Id == request.SexoId.Value);
+            if (!sexoExiste)
+                return BadRequest("El sexo especificado no existe.");
+        }
+
+        persona.Update(
+            nombre: request.Nombre,
+            apellido: request.Apellido,
+            tipoDocumentoId: request.TipoDocumentoId,
+            numeroDocumento: request.NumeroDocumento,
+            fechaNacimiento: request.FechaNacimiento,
+            sexoId: request.SexoId
+        );
 
         await _context.SaveChangesAsync();
         return NoContent();
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = AppRoles.Admin)] 
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Delete(Guid id)
     {
         var persona = await _context.Personas.FindAsync(id);

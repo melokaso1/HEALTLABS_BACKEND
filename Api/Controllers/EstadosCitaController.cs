@@ -1,7 +1,7 @@
 using Api.Security;
 using Application.DTOs.EstadoCita;
 using Domain.Entities;
-using Infrastructure.Persistence.Context; 
+using Infrastructure.Persistence.Context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,25 +10,25 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Admin)] 
+[Authorize(Roles = AppRoles.Admin)]
 public sealed class EstadosCitaController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly AppDbContext _context;
 
-    public EstadosCitaController(ApplicationDbContext context)
+    public EstadosCitaController(AppDbContext context)
     {
         _context = context;
     }
 
     [HttpGet]
-    [Authorize(Roles = AppRoles.Todos)] 
+    [Authorize(Roles = AppRoles.Todos)]
     public async Task<IActionResult> GetAll()
     {
         var estados = await _context.EstadosCita
-            .Select(e => new EstadoCitaDto
+            .Select(e => new CreateEstadoCitaDto
             {
-                IdEstadoCita = e.IdEstadoCita,
-                Nombre = e.Nombre
+                Codigo = e.Codigo,
+                Descripcion = e.Descripcion
             })
             .ToListAsync();
 
@@ -40,11 +40,11 @@ public sealed class EstadosCitaController : ControllerBase
     public async Task<IActionResult> GetById(Guid id)
     {
         var estado = await _context.EstadosCita
-            .Where(e => e.IdEstadoCita == id)
-            .Select(e => new EstadoCitaDto
+            .Where(e => e.Id == id)
+            .Select(e => new CreateEstadoCitaDto
             {
-                IdEstadoCita = e.IdEstadoCita,
-                Nombre = e.Nombre
+                Codigo = e.Codigo,
+                Descripcion = e.Descripcion
             })
             .FirstOrDefaultAsync();
 
@@ -57,32 +57,42 @@ public sealed class EstadosCitaController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateEstadoCitaDto request)
     {
-        var nuevoEstado = new EstadoCita
-        {
-            IdEstadoCita = Guid.NewGuid(),
-            Nombre = request.Nombre
-        };
+        var codigoExiste = await _context.EstadosCita.AnyAsync(e => e.Codigo == request.Codigo);
+        if (codigoExiste)
+            return BadRequest("El código de estado ya se encuentra registrado.");
+
+        var nuevoEstado = new EstadoCitaEntity(
+            codigo: request.Codigo,
+            descripcion: request.Descripcion
+        );
 
         _context.EstadosCita.Add(nuevoEstado);
         await _context.SaveChangesAsync();
 
-        var estadoDto = new EstadoCitaDto
+        var estadoDto = new CreateEstadoCitaDto
         {
-            IdEstadoCita = nuevoEstado.IdEstadoCita,
-            Nombre = nuevoEstado.Nombre
+            Codigo = nuevoEstado.Codigo,
+            Descripcion = nuevoEstado.Descripcion
         };
 
-        return CreatedAtAction(nameof(GetById), new { id = estadoDto.IdEstadoCita }, estadoDto);
+        return CreatedAtAction(nameof(GetById), new { id = nuevoEstado.Id }, estadoDto);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] CreateEstadoCitaDto request)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateEstadoCitaDto request)
     {
         var estado = await _context.EstadosCita.FindAsync(id);
         if (estado is null)
             return NotFound();
 
-        estado.Nombre = request.Nombre;
+        var codigoExiste = await _context.EstadosCita.AnyAsync(e => e.Codigo == request.Codigo && e.Id != id);
+        if (codigoExiste)
+            return BadRequest("El código de estado ya está en uso por otro registro.");
+
+        estado.Update(
+            codigo: request.Codigo,
+            descripcion: request.Descripcion
+        );
 
         await _context.SaveChangesAsync();
         return NoContent();
