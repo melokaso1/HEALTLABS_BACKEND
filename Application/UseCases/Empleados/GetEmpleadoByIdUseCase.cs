@@ -1,10 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Domain.Entities;
+using Domain.Interfaces;
 
 namespace Application.UseCases.Empleados
 {
-    internal class GetEmpleadoByIdUseCase
+    public class GetEmpleadoByIdUseCase
     {
+        private readonly IGenericRepository<EmpleadoEntity> _repo;
+
+        public GetEmpleadoByIdUseCase(IGenericRepository<EmpleadoEntity> repo)
+        {
+            _repo = repo;
+        }
+
+        public async Task<EmpleadoEntity> ExecuteAsync(Guid id)
+        {
+            var entity = await _repo.GetEntityByIdAsync(id);
+
+            return entity;
+        }
     }
 }
