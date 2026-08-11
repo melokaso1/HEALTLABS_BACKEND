@@ -18,11 +18,12 @@ public sealed record SexoValueObject
 
     public string Codigo { get; }
 
-    public string Nombre => SexosPermitidos[Codigo];
+    public string Nombre { get; }
 
-    private SexoValueObject(string codigo)
+    private SexoValueObject(string codigo, string nombre)
     {
         Codigo = codigo;
+        Nombre = nombre;
     }
 
     public static SexoValueObject Create(string codigo)
@@ -32,19 +33,19 @@ public sealed record SexoValueObject
 
         var codigoNormalizado = codigo.Trim().ToUpperInvariant();
 
-        if (!SexosPermitidos.ContainsKey(codigoNormalizado))
+        if (!SexosPermitidos.TryGetValue(codigoNormalizado, out var nombre))
             throw new ArgumentException(
-                $"El sexo '{codigo}' no es valido. Codigos permitidos: {string.Join(", ", SexosPermitidos.Keys)}.",
+                $"El sexo '{codigoNormalizado}' no es valido. Codigos permitidos: {string.Join(", ", SexosPermitidos.Keys)}.",
                 nameof(codigo));
 
-        return new SexoValueObject(codigoNormalizado);
+        return new SexoValueObject(codigoNormalizado, nombre);
     }
 
-    public static SexoValueObject M() => new(Masculino);
+    public static SexoValueObject M() => new(Masculino, SexosPermitidos[Masculino]);
 
-    public static SexoValueObject F() => new(Femenino);
+    public static SexoValueObject F() => new(Femenino, SexosPermitidos[Femenino]);
 
-    public static SexoValueObject O() => new(Otro);
+    public static SexoValueObject O() => new(Otro, SexosPermitidos[Otro]);
 
     public override string ToString() => Codigo;
 }
