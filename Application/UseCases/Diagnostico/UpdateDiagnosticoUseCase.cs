@@ -1,10 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Application.DTOs.Cita;
+using Domain.Entities;
+using Domain.Interfaces;
 
 namespace Application.UseCases.Diagnostico
 {
-    internal class UpdateDiagnosticoUseCase
+    public class UpdateDiagnosticoUseCase
     {
+
+     
     }
 }
