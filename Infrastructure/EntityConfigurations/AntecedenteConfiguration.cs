@@ -11,7 +11,7 @@ public class AntecedenteConfiguration : IEntityTypeConfiguration<AntecedenteEnti
         builder.ToTable("antecedente", t =>
             t.HasCheckConstraint(
                 "CK_antecedente_tipo",
-                "Tipo IN ('personal', 'familiar', 'quirurgico')"));
+                "\"Tipo\" IN ('personal', 'familiar', 'quirurgico')"));
 
         builder.HasKey(x => x.Id);
         builder.Property(x => x.PacienteId).IsRequired();

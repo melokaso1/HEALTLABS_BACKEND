@@ -17,7 +17,7 @@ public class MedicoEspecialidadConfiguration : IEntityTypeConfiguration<MedicoEs
         builder.HasIndex(x => new { x.MedicoId, x.EspecialidadId }).IsUnique();
         builder.HasIndex(x => x.MedicoId)
             .IsUnique()
-            .HasFilter("Principal = 1")
+            .HasFilter("\"Principal\" = TRUE")
             .HasDatabaseName("UX_medico_especialidad_principal");
 
         builder.HasOne(x => x.Medico)

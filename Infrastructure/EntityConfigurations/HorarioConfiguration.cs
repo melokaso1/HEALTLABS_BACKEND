@@ -11,7 +11,7 @@ public class HorarioConfiguration : IEntityTypeConfiguration<HorarioEntity>
         builder.ToTable("horario", t =>
             t.HasCheckConstraint(
                 "CK_horario_jornada",
-                "HoraEntrada < SalidaAlmuerzo AND SalidaAlmuerzo < RetornoActividades AND RetornoActividades < HoraSalida"));
+                "\"HoraEntrada\" < \"SalidaAlmuerzo\" AND \"SalidaAlmuerzo\" < \"RetornoActividades\" AND \"RetornoActividades\" < \"HoraSalida\""));
 
         builder.HasKey(x => x.Id);
         builder.Property(x => x.MedicoId).IsRequired();

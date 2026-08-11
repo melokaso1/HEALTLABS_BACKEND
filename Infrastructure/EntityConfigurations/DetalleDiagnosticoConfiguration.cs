@@ -17,7 +17,7 @@ public class DetalleDiagnosticoConfiguration : IEntityTypeConfiguration<DetalleD
         builder.HasIndex(x => new { x.DetalleCitaId, x.DiagnosticoId }).IsUnique();
         builder.HasIndex(x => x.DetalleCitaId)
             .IsUnique()
-            .HasFilter("Principal = 1")
+            .HasFilter("\"Principal\" = TRUE")
             .HasDatabaseName("UX_detalle_diagnostico_principal");
 
         builder.HasOne(x => x.DetalleCita)

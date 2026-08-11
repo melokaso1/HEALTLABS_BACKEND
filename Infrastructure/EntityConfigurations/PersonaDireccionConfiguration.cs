@@ -11,7 +11,7 @@ public class PersonaDireccionConfiguration : IEntityTypeConfiguration<PersonaDir
         builder.ToTable("persona_direccion", t =>
             t.HasCheckConstraint(
                 "CK_persona_direccion_tipo",
-                "Tipo IS NULL OR Tipo IN ('residencia', 'trabajo')"));
+                "\"Tipo\" IS NULL OR \"Tipo\" IN ('residencia', 'trabajo')"));
 
         builder.HasKey(x => x.Id);
         builder.Property(x => x.PersonaId).IsRequired();
@@ -22,7 +22,7 @@ public class PersonaDireccionConfiguration : IEntityTypeConfiguration<PersonaDir
 
         builder.HasIndex(x => x.PersonaId)
             .IsUnique()
-            .HasFilter("Principal = 1")
+            .HasFilter("\"Principal\" = TRUE")
             .HasDatabaseName("UX_persona_direccion_principal");
 
         builder.HasOne(x => x.Persona)

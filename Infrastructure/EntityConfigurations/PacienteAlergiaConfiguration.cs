@@ -11,7 +11,7 @@ public class PacienteAlergiaConfiguration : IEntityTypeConfiguration<PacienteAle
         builder.ToTable("paciente_alergia", t =>
             t.HasCheckConstraint(
                 "CK_paciente_alergia_severidad",
-                "Severidad IS NULL OR Severidad IN ('leve', 'moderada', 'severa')"));
+                "\"Severidad\" IS NULL OR \"Severidad\" IN ('leve', 'moderada', 'severa')"));
 
         builder.HasKey(x => x.Id);
         builder.Property(x => x.PacienteId).IsRequired();

@@ -11,7 +11,7 @@ public class PersonaTelefonoConfiguration : IEntityTypeConfiguration<PersonaTele
         builder.ToTable("persona_telefono", t =>
             t.HasCheckConstraint(
                 "CK_persona_telefono_tipo",
-                "Tipo IS NULL OR Tipo IN ('movil', 'fijo', 'trabajo')"));
+                "\"Tipo\" IS NULL OR \"Tipo\" IN ('movil', 'fijo', 'trabajo')"));
 
         builder.HasKey(x => x.Id);
         builder.Property(x => x.PersonaId).IsRequired();
@@ -21,7 +21,7 @@ public class PersonaTelefonoConfiguration : IEntityTypeConfiguration<PersonaTele
 
         builder.HasIndex(x => x.PersonaId)
             .IsUnique()
-            .HasFilter("Principal = 1")
+            .HasFilter("\"Principal\" = TRUE")
             .HasDatabaseName("UX_persona_telefono_principal");
 
         builder.HasOne(x => x.Persona)
