@@ -1,10 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Domain.Entities;
+using Domain.Interfaces;
 
 namespace Application.UseCases.DetalleCita
 {
-    internal class GetDetalleCitaByIdUseCase
+    public class GetDetalleCitaByIdUseCase
     {
+        private readonly IGenericRepository<DetalleCitaEntity> _repo;
+
+        public GetDetalleCitaByIdUseCase(IGenericRepository<DetalleCitaEntity> repo)
+        {
+            _repo = repo;
+        }
+
+        public async Task<DetalleCitaEntity> EntityAsync(Guid id)
+        {
+            var entity = await _repo.GetEntityByIdAsync(id);
+            return entity;
+        }
     }
 }
