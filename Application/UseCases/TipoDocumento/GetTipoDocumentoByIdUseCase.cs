@@ -1,10 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Domain.Entities;
+using Domain.Interfaces;
 
 namespace Application.UseCases.TipoDocumento
 {
-    internal class GetTipoDocumentoByIdUseCase
+    public class GetTipoDocumentoByIdUseCase
     {
+        private readonly IGenericRepository<TipoDocumentoEntity> _repo;
+
+        public GetTipoDocumentoByIdUseCase(IGenericRepository<TipoDocumentoEntity> repo)
+        {
+            _repo = repo;
+        }
+
+        public async Task<TipoDocumentoEntity> ExecuteAsync(Guid id)
+        {
+            var entity = await _repo.GetEntityByIdAsync(id);
+
+            return entity;
+        }
     }
 }

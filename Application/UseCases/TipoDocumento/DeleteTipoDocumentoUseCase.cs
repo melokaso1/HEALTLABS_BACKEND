@@ -1,10 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Domain.Entities;
+using Domain.Interfaces;
 
 namespace Application.UseCases.TipoDocumento
 {
-    internal class DeleteTipoDocumentoUseCase
+    public class DeleteTipoDocumentoUseCase
     {
+        private readonly IGenericRepository<TipoDocumentoEntity> _repo;
+        public DeleteTipoDocumentoUseCase(IGenericRepository<TipoDocumentoEntity> repo)
+        {
+            _repo = repo;
+        }
+        public async Task ExecuteAsync(Guid id)
+        {
+
+            await _repo.DeleteAsync(id);
+        }
     }
 }
