@@ -13,29 +13,31 @@ namespace Api.Controllers;
 [Authorize(Roles = AppRoles.Admin)]
 public sealed class UsuariosController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly AppDbContext _context;
 
-    public UsuariosController(ApplicationDbContext context)
+    public UsuariosController(AppDbContext context)
     {
         _context = context;
     }
 
-    // GET: api/Usuarios
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
         var usuarios = await _context.Usuarios
-            .Include(u => p => u.Persona)
+            .Include(u => u.Empleado)
             .Include(u => u.Rol)
-            .Include(u => u.Cargo)
             .Select(u => new UsuarioDto
             {
-                IdUsuario = u.IdUsuario,
+                UsuarioId = u.Id,
+                EmpleadoId = u.EmpleadoId,
+                RolId = u.RolId,
                 Username = u.Username,
+                Email = u.Email,
                 Activo = u.Activo,
-                IdPersona = u.IdPersona,
-                IdRol = u.IdRol,
-                IdCargo = u.IdCargo
+                FechaCreacion = u.FechaCreacion,
+                UltimoLogin = u.UltimoLogin,
+                DebeCambiarPassword = u.DebeCambiarPassword,
+                TokenVersion = u.TokenVersion
             })
             .ToListAsync();
 
@@ -46,15 +48,19 @@ public sealed class UsuariosController : ControllerBase
     public async Task<IActionResult> GetById(Guid id)
     {
         var usuario = await _context.Usuarios
-            .Where(u => u.IdUsuario == id)
+            .Where(u => u.Id == id)
             .Select(u => new UsuarioDto
             {
-                IdUsuario = u.IdUsuario,
+                UsuarioId = u.Id,
+                EmpleadoId = u.EmpleadoId,
+                RolId = u.RolId,
                 Username = u.Username,
+                Email = u.Email,
                 Activo = u.Activo,
-                IdPersona = u.IdPersona,
-                IdRol = u.IdRol,
-                IdCargo = u.IdCargo
+                FechaCreacion = u.FechaCreacion,
+                UltimoLogin = u.UltimoLogin,
+                DebeCambiarPassword = u.DebeCambiarPassword,
+                TokenVersion = u.TokenVersion
             })
             .FirstOrDefaultAsync();
 
@@ -67,76 +73,106 @@ public sealed class UsuariosController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateUsuarioDto request)
     {
-        var personaExiste = await _context.Personas.AnyAsync(p => p.IdPersona == request.IdPersona);
-        if (!personaExiste)
-            return BadRequest("La persona especificada no existe.");
+        var empleadoExiste = await _context.Empleados.AnyAsync(e => e.Id == request.EmpleadoId);
+        if (!empleadoExiste)
+            return BadRequest("El empleado especificado no existe.");
 
-        var rolExiste = await _context.Roles.AnyAsync(r => r.IdRol == request.IdRol);
+        var rolExiste = await _context.Roles.AnyAsync(r => r.Id == request.RolId);
         if (!rolExiste)
             return BadRequest("El rol especificado no existe.");
-
-        var cargoExiste = await _context.Cargos.AnyAsync(c => c.IdCargo == request.IdCargo);
-        if (!cargoExiste)
-            return BadRequest("El cargo especificado no existe.");
 
         var usernameExiste = await _context.Usuarios.AnyAsync(u => u.Username == request.Username);
         if (usernameExiste)
             return BadRequest("El nombre de usuario ya se encuentra registrado.");
 
-        var nuevoUsuario = new Usuario
-        {
-            IdUsuario = Guid.NewGuid(),
-            Username = request.Username,
-            PasswordHash = request.Password, 
-            Activo = true,
-            IdPersona = request.IdPersona,
-            IdRol = request.IdRol,
-            IdCargo = request.IdCargo
-        };
+        var emailExiste = await _context.Usuarios.AnyAsync(u => u.Email == request.Email);
+        if (emailExiste)
+            return BadRequest("El correo electrónico ya se encuentra registrado.");
+
+        var nuevoUsuario = new UsuarioEntity(
+            empleadoId: request.EmpleadoId,
+            rolId: request.RolId,
+            username: request.Username,
+            email: request.Email,
+            passwordHash: request.Password, 
+            activo: request.Activo,
+            ultimoLogin: null,
+            intentosFallidos: 0,
+            bloqueadoHasta: null,
+            debeCambiarPassword: request.DebeCambiarPassword,
+            passwordChangedAt: null,
+            tokenVersion: 1
+        );
 
         _context.Usuarios.Add(nuevoUsuario);
         await _context.SaveChangesAsync();
 
         var usuarioDto = new UsuarioDto
         {
-            IdUsuario = nuevoUsuario.IdUsuario,
+            UsuarioId = nuevoUsuario.Id,
+            EmpleadoId = nuevoUsuario.EmpleadoId,
+            RolId = nuevoUsuario.RolId,
             Username = nuevoUsuario.Username,
+            Email = nuevoUsuario.Email,
             Activo = nuevoUsuario.Activo,
-            IdPersona = nuevoUsuario.IdPersona,
-            IdRol = nuevoUsuario.IdRol,
-            IdCargo = nuevoUsuario.IdCargo
+            FechaCreacion = nuevoUsuario.FechaCreacion,
+            UltimoLogin = nuevoUsuario.UltimoLogin,
+            DebeCambiarPassword = nuevoUsuario.DebeCambiarPassword,
+            TokenVersion = nuevoUsuario.TokenVersion
         };
 
-        return CreatedAtAction(nameof(GetById), new { id = usuarioDto.IdUsuario }, usuarioDto);
+        return CreatedAtAction(nameof(GetById), new { id = usuarioDto.UsuarioId }, usuarioDto);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] CreateUsuarioDto request)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUsuarioDto request)
     {
         var usuario = await _context.Usuarios.FindAsync(id);
         if (usuario is null)
             return NotFound();
 
-        var personaExiste = await _context.Personas.AnyAsync(p => p.IdPersona == request.IdPersona);
-        if (!personaExiste)
-            return BadRequest("La persona especificada no existe.");
+        var empleadoExiste = await _context.Empleados.AnyAsync(e => e.Id == request.EmpleadoId);
+        if (!empleadoExiste)
+            return BadRequest("El empleado especificado no existe.");
 
-        var rolExiste = await _context.Roles.AnyAsync(r => r.IdRol == request.IdRol);
+        var rolExiste = await _context.Roles.AnyAsync(r => r.Id == request.RolId);
         if (!rolExiste)
             return BadRequest("El rol especificado no existe.");
 
-        var cargoExiste = await _context.Cargos.AnyAsync(c => c.IdCargo == request.IdCargo);
-        if (!cargoExiste)
-            return BadRequest("El cargo especificado no existe.");
+        var usernameExiste = await _context.Usuarios.AnyAsync(u => u.Username == request.Username && u.Id != id);
+        if (usernameExiste)
+            return BadRequest("El nombre de usuario ya se encuentra en uso por otro usuario.");
 
-        usuario.Username = request.Username;
-        if (!string.IsNullOrWhiteSpace(request.Password))
-        {
-            usuario.PasswordHash = request.Password; 
-        }
-        usuario.IdPersona = request.IdPersona;
-        usuario.IdRol = request.IdRol;
-        usuario.IdCargo = request.IdCargo;
+        var emailExiste = await _context.Usuarios.AnyAsync(u => u.Email == request.Email && u.Id != id);
+        if (emailExiste)
+            return BadRequest("El correo electrónico ya se encuentra en uso por otro usuario.");
+
+        var passwordHash = string.IsNullOrWhiteSpace(request.Password)
+            ? usuario.PasswordHash
+            : request.Password;
+
+        var passwordChangedAt = string.IsNullOrWhiteSpace(request.Password)
+            ? usuario.PasswordChangedAt
+            : DateTime.UtcNow;
+
+        var tokenVersion = (!string.IsNullOrWhiteSpace(request.Password) || usuario.Activo != request.Activo)
+            ? usuario.TokenVersion + 1
+            : usuario.TokenVersion;
+
+        usuario.Update(
+            empleadoId: request.EmpleadoId,
+            rolId: request.RolId,
+            username: request.Username,
+            email: request.Email,
+            passwordHash: passwordHash,
+            activo: request.Activo,
+            ultimoLogin: usuario.UltimoLogin,
+            intentosFallidos: usuario.IntentosFallidos,
+            bloqueadoHasta: usuario.BloqueadoHasta,
+            debeCambiarPassword: request.DebeCambiarPassword,
+            passwordChangedAt: passwordChangedAt,
+            tokenVersion: tokenVersion
+        );
 
         await _context.SaveChangesAsync();
         return NoContent();
@@ -149,7 +185,20 @@ public sealed class UsuariosController : ControllerBase
         if (usuario is null)
             return NotFound();
 
-        usuario.Activo = false;
+        usuario.Update(
+            empleadoId: usuario.EmpleadoId,
+            rolId: usuario.RolId,
+            username: usuario.Username,
+            email: usuario.Email,
+            passwordHash: usuario.PasswordHash,
+            activo: false, 
+            ultimoLogin: usuario.UltimoLogin,
+            intentosFallidos: usuario.IntentosFallidos,
+            bloqueadoHasta: usuario.BloqueadoHasta,
+            debeCambiarPassword: usuario.DebeCambiarPassword,
+            passwordChangedAt: usuario.PasswordChangedAt,
+            tokenVersion: usuario.TokenVersion + 1 
+        );
 
         await _context.SaveChangesAsync();
         return NoContent();

@@ -1,7 +1,7 @@
 using Api.Security;
 using Application.DTOs.Especialidad;
 using Domain.Entities;
-using Infrastructure.Persistence.Context; 
+using Infrastructure.Persistence.Context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,25 +10,25 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Admin)] 
+[Authorize(Roles = AppRoles.Admin)]
 public sealed class EspecialidadesController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly AppDbContext _context;
 
-    public EspecialidadesController(ApplicationDbContext context)
+    public EspecialidadesController(AppDbContext context)
     {
         _context = context;
     }
 
     [HttpGet]
-    [AllowAnonymous] 
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll()
     {
         var especialidades = await _context.Especialidades
-            .Select(e => new EspecialidadDto
+            .Select(e => new CreateEspecialidadDto
             {
-                IdEspecialidad = e.IdEspecialidad,
-                Nombre = e.Nombre
+                Nombre = e.Nombre,
+                Descripcion = e.Descripcion
             })
             .ToListAsync();
 
@@ -39,11 +39,11 @@ public sealed class EspecialidadesController : ControllerBase
     public async Task<IActionResult> GetById(Guid id)
     {
         var especialidad = await _context.Especialidades
-            .Where(e => e.IdEspecialidad == id)
-            .Select(e => new EspecialidadDto
+            .Where(e => e.Id == id)
+            .Select(e => new CreateEspecialidadDto
             {
-                IdEspecialidad = e.IdEspecialidad,
-                Nombre = e.Nombre
+                Nombre = e.Nombre,
+                Descripcion = e.Descripcion
             })
             .FirstOrDefaultAsync();
 
@@ -56,32 +56,34 @@ public sealed class EspecialidadesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateEspecialidadDto request)
     {
-        var nuevaEspecialidad = new Especialidad
-        {
-            IdEspecialidad = Guid.NewGuid(),
-            Nombre = request.Nombre
-        };
+        var nuevaEspecialidad = new EspecialidadEntity(
+            nombre: request.Nombre,
+            descripcion: request.Descripcion
+        );
 
         _context.Especialidades.Add(nuevaEspecialidad);
         await _context.SaveChangesAsync();
 
-        var especialidadDto = new EspecialidadDto
+        var especialidadDto = new CreateEspecialidadDto
         {
-            IdEspecialidad = nuevaEspecialidad.IdEspecialidad,
-            Nombre = nuevaEspecialidad.Nombre
+            Nombre = nuevaEspecialidad.Nombre,
+            Descripcion = nuevaEspecialidad.Descripcion
         };
 
-        return CreatedAtAction(nameof(GetById), new { id = especialidadDto.IdEspecialidad }, especialidadDto);
+        return CreatedAtAction(nameof(GetById), new { id = nuevaEspecialidad.Id }, especialidadDto);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] CreateEspecialidadDto request)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateEspecialidadDto request)
     {
         var especialidad = await _context.Especialidades.FindAsync(id);
         if (especialidad is null)
             return NotFound();
 
-        especialidad.Nombre = request.Nombre;
+        especialidad.Update(
+            nombre: request.Nombre,
+            descripcion: request.Descripcion
+        );
 
         await _context.SaveChangesAsync();
         return NoContent();
