@@ -12,7 +12,7 @@ namespace Application.UseCases.DetalleCita
             _repo = repo;
         }
 
-        public async Task<DetalleCitaEntity> EntityAsync(Guid id)
+        public async Task<DetalleCitaEntity> ExecuteAsync(Guid id)
         {
             var entity = await _repo.GetEntityByIdAsync(id);
             return entity;
