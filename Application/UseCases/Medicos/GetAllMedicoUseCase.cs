@@ -3,7 +3,7 @@ using Domain.Interfaces;
 
 namespace Application.UseCases.Medicos
 {
-    internal class GetAllMedicoUseCase
+    public class GetAllMedicoUseCase
     {
         private readonly IGenericRepository<MedicoEntity> _repo;
 

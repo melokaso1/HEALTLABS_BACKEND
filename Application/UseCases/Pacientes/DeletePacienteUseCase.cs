@@ -1,10 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Domain.Entities;
+using Domain.Interfaces;
 
 namespace Application.UseCases.Pacientes
 {
-    internal class DeletePacienteUseCase
+    public class DeletePacienteUseCase
     {
+        private readonly IGenericRepository<PacienteEntity> _repo;
+        public DeletePacienteUseCase(IGenericRepository<PacienteEntity> repo)
+        {
+            _repo = repo;
+        }
+        public async Task ExecuteAsync(Guid id)
+        {
+
+            await _repo.DeleteAsync(id);
+        }
     }
 }

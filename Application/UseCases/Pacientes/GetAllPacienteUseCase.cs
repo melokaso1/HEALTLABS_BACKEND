@@ -1,10 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Domain.Entities;
+using Domain.Interfaces;
 
 namespace Application.UseCases.Pacientes
 {
-    internal class GetAllPacienteUseCase
+    public class GetAllPacienteUseCase
     {
+        private readonly IGenericRepository<PacienteEntity> _repo;
+
+        public GetAllPacienteUseCase(IGenericRepository<PacienteEntity> repo)
+        {
+            _repo = repo;
+        }
+
+        public async Task<IEnumerable<PacienteEntity>> ExecuteAsync()
+        {
+            return await _repo.GetAllEntitiesAsync();
+        }
     }
 }
