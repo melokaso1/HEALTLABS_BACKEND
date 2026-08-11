@@ -1,10 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Domain.Entities;
+using Domain.Interfaces;
 
 namespace Application.UseCases.Cargo
 {
-    internal class GetAllCargoUseCase
+    public class GetAllCargoUseCase
     {
+        private readonly IGenericRepository<CargoEntity> _repo;
+
+        public GetAllCargoUseCase(IGenericRepository<CargoEntity> repo)
+        {
+            _repo = repo;
+        }
+
+        public async Task<IEnumerable<CargoEntity>> ExecuteAsync()
+        {
+            return await _repo.GetAllEntitiesAsync();
+        }
     }
 }
