@@ -1,10 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Domain.Entities;
+using Domain.Interfaces;
 
 namespace Application.UseCases.Especialidad
 {
-    internal class GetEspecialidadByIdUseCase
+    public class GetEspecialidadByIdUseCase
     {
+        private readonly IGenericRepository<EspecialidadEntity> _repo;
+
+        public GetEspecialidadByIdUseCase(IGenericRepository<EspecialidadEntity> repo)
+        {
+            _repo = repo;
+        }
+
+        public async Task<EspecialidadEntity> ExecuteAsync(Guid id)
+        {
+            var entity = await _repo.GetEntityByIdAsync(id);
+
+            return entity;
+        }
     }
 }
