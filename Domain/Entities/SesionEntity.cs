@@ -76,5 +76,10 @@ namespace Domain.Entities
             UserAgent = userAgent;
             Dispositivo = dispositivo;
         }
+        public void Revocar(string motivo)
+        {
+            RevocadoEn = DateTime.UtcNow;
+            MotivoRevocacion = motivo;
+        }
     }
 }
