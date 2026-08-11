@@ -14,8 +14,7 @@ public class RolSeeder(AppDbContext context)
         {
             new("Administrador", "Acceso total al sistema y gestión de configuración", true),
             new("Médico", "Gestión de atenciones médicas e historias clínicas", true),
-            new("Recepcionista", "Gestión de citas y atención al paciente en recepción", true),
-            new("Paciente", "Acceso a su portal de paciente y consulta de citas", true)
+            new("Recepcionista", "Gestión de citas y atención al paciente en recepción", true)
         };
 
         await context.Roles.AddRangeAsync(roles);
