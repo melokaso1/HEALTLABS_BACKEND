@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Horario;
+﻿using Application.Common;
+using Application.DTOs.Horario;
 using Domain.Entities;
 using Domain.Interfaces;
 
@@ -15,6 +16,12 @@ namespace Application.UseCases.Horarios
 
         public async Task ExecuteAsync(Guid id, UpdateHorarioDto dto)
         {
+            TimePrecision.EnsureHhMm(
+                ("HoraEntrada", dto.HoraEntrada),
+                ("HoraSalida", dto.HoraSalida),
+                ("SalidaAlmuerzo", dto.SalidaAlmuerzo),
+                ("RetornoActividades", dto.RetornoActividades));
+
             var horario = await _repo.GetEntityByIdAsync(id)
                 ?? throw new KeyNotFoundException("No Existe");
 

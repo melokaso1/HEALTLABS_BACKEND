@@ -1,3 +1,4 @@
+using Application.Common;
 using Domain.Entities;
 using Domain.Interfaces;
 
@@ -61,6 +62,10 @@ public sealed class CitaSchedulingRules
         TimeOnly horaFin,
         Guid? excludeCitaId)
     {
+        TimePrecision.EnsureHhMm(
+            ("HoraInicio", horaInicio),
+            ("HoraFin", horaFin));
+
         if (horaFin <= horaInicio)
             throw new InvalidOperationException("La hora de fin debe ser posterior a la hora de inicio.");
 
@@ -88,6 +93,10 @@ public sealed class CitaSchedulingRules
         TimeOnly horaInicio,
         TimeOnly horaFin)
     {
+        TimePrecision.EnsureHhMm(
+            ("HoraInicio", horaInicio),
+            ("HoraFin", horaFin));
+
         if (fecha.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
             throw new InvalidOperationException("No se pueden agendar citas en fin de semana.");
 
