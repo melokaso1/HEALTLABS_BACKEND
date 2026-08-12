@@ -37,7 +37,7 @@ public sealed class UsuariosController : ControllerBase
         try
         {
             var usuario = await _create.ExecuteAsync(request);
-            return CreatedAtAction(nameof(GetById), new { id = usuario.Id }, request);
+            return CreatedAtAction(nameof(GetById), new { id = usuario.Id }, usuario);
         }
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }

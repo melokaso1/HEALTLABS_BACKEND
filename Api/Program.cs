@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Text;
+using Api.Middlewares;
 using Application;
 using DotNetEnv;
 using Infrastructure;
@@ -113,6 +114,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 app.UseCors("Frontend");
 app.UseAuthentication();

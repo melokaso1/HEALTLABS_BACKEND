@@ -35,7 +35,7 @@ public sealed class PersonaTelefonosController : ControllerBase
         try
         {
             var entity = await _useCase.CreateAsync(request);
-            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, request);
+            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity);
         }
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
