@@ -16,7 +16,7 @@ namespace Application.UseCases.Empleados
         public async Task ExecuteAsync(Guid id, UpdateEmpleadoDto dto)
         {
             var empleado = await _repo.GetEntityByIdAsync(id)
-                ?? throw new ArgumentException("No Existe");
+                ?? throw new KeyNotFoundException("No Existe");
 
             empleado.Update(dto.CargoId, dto.FechaIngreso, dto.FechaRetiro, dto.Activo);
             await _repo.UpdateAsync(empleado);

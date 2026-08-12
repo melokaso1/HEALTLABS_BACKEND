@@ -16,7 +16,7 @@ namespace Application.UseCases.PersonaDireccion
         public async Task ExecuteAsync(Guid id, UpdatePersonaDireccionDto dto)
         {
             var persona_direccion = await _repo.GetEntityByIdAsync(id)
-                ?? throw new ArgumentException("No Existe");
+                ?? throw new KeyNotFoundException("No Existe");
 
             persona_direccion.Update(dto.Direccion, dto.Ciudad, dto.Tipo, dto.Principal);
             await _repo.UpdateAsync(persona_direccion);

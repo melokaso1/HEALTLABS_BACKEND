@@ -20,7 +20,7 @@ namespace Application.UseCases.Personas
 
             if (persona == null)
             {
-                throw new ArgumentException("No Existe");
+                throw new KeyNotFoundException("No Existe");
             }
 
             persona.Nombre = dto.Nombre;

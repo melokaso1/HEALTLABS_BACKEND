@@ -16,7 +16,7 @@ namespace Application.UseCases.Tratamiento
         public async Task ExecuteAsync(Guid id, UpdateTratamientoDto dto)
         {
             var tratamiento = await _repo.GetEntityByIdAsync(id)
-                ?? throw new ArgumentException("No Existe");
+                ?? throw new KeyNotFoundException("No Existe");
 
             tratamiento.Update(dto.Nombre, dto.Descripcion, dto.Activo);
             await _repo.UpdateAsync(tratamiento);

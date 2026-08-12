@@ -16,7 +16,7 @@ namespace Application.UseCases.TipoDocumento
         public async Task ExecuteAsync(Guid id, UpdateTipoDocumentoDto dto)
         {
             var tipo_documento = await _repo.GetEntityByIdAsync(id)
-                ?? throw new ArgumentException("No Existe");
+                ?? throw new KeyNotFoundException("No Existe");
 
             tipo_documento.Update(dto.Nombre);
             await _repo.UpdateAsync(tipo_documento);

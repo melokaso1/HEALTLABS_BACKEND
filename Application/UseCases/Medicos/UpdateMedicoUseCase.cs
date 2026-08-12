@@ -16,7 +16,7 @@ namespace Application.UseCases.Medicos
         public async Task ExecuteAsync(Guid id, UpdateMedicoDto dto)
         {
             var medico = await _repo.GetEntityByIdAsync(id)
-                ?? throw new ArgumentException("No Existe");
+                ?? throw new KeyNotFoundException("No Existe");
 
             medico.Update(dto.RegistroProfesional, dto.Activo);
             await _repo.UpdateAsync(medico);

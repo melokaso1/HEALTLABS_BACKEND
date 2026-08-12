@@ -23,7 +23,7 @@ namespace Application.UseCases.Especialidad
 
             if (especialidad == null)
             {
-                throw new ArgumentException("No Existe");
+                throw new KeyNotFoundException("No Existe");
             }
 
             especialidad.Nombre = dto.Nombre;
