@@ -24,7 +24,7 @@ public sealed record NombreValueObject
         if (string.IsNullOrWhiteSpace(value))
             throw new ArgumentException("El nombre es obligatorio.", nameof(value));
 
-        var nombreNormalizado = Regex.Replace(value.Trim(), "\s+", " ");
+        var nombreNormalizado = Regex.Replace(value.Trim(), @"\s+", " ");
 
         if (nombreNormalizado.Length < LongitudMinima || nombreNormalizado.Length > LongitudMaxima)
             throw new ArgumentException($"El nombre debe tener entre {LongitudMinima} y {LongitudMaxima} caracteres.", nameof(value));

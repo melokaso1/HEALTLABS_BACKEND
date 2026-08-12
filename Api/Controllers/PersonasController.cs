@@ -1,10 +1,8 @@
 using Api.Security;
 using Application.DTOs.Persona;
-using Domain.Entities;
-using Infrastructure.Persistence.Context;
+using Application.UseCases.Persona;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers;
 
@@ -13,135 +11,53 @@ namespace Api.Controllers;
 [Authorize(Roles = AppRoles.Staff)]
 public sealed class PersonasController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly PersonaCrudUseCase _useCase;
 
-    public PersonasController(AppDbContext context)
-    {
-        _context = context;
-    }
+    public PersonasController(PersonaCrudUseCase useCase) => _useCase = useCase;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
-    {
-        var personas = await _context.Personas
-            .Include(p => p.TipoDocumento)
-            .Select(p => new CreatePersonaDto
-            {
-                Nombre = p.Nombre,
-                Apellido = p.Apellido,
-                TipoDocumentoId = p.TipoDocumentoId,
-                NumeroDocumento = p.NumeroDocumento,
-                FechaNacimiento = p.FechaNacimiento,
-                SexoId = p.SexoId
-            })
-            .ToListAsync();
-
-        return Ok(personas);
-    }
+    public async Task<IActionResult> GetAll() => Ok(await _useCase.GetAllAsync());
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var persona = await _context.Personas
-            .Where(p => p.Id == id)
-            .Select(p => new CreatePersonaDto
-            {
-                Nombre = p.Nombre,
-                Apellido = p.Apellido,
-                TipoDocumentoId = p.TipoDocumentoId,
-                NumeroDocumento = p.NumeroDocumento,
-                FechaNacimiento = p.FechaNacimiento,
-                SexoId = p.SexoId
-            })
-            .FirstOrDefaultAsync();
-
-        if (persona is null)
-            return NotFound();
-
-        return Ok(persona);
+        var entity = await _useCase.GetByIdAsync(id);
+        return entity is null ? NotFound() : Ok(entity);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreatePersonaDto request)
     {
-        var tipoDocExiste = await _context.TiposDocumento.AnyAsync(td => td.Id == request.TipoDocumentoId);
-        if (!tipoDocExiste)
-            return BadRequest("El tipo de documento especificado no existe.");
-
-        if (request.SexoId.HasValue)
+        try
         {
-            var sexoExiste = await _context.Sexos.AnyAsync(s => s.Id == request.SexoId.Value);
-            if (!sexoExiste)
-                return BadRequest("El sexo especificado no existe.");
+            var entity = await _useCase.CreateAsync(request);
+            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, request);
         }
-
-        var nuevaPersona = new PersonaEntity(
-            nombre: request.Nombre,
-            apellido: request.Apellido,
-            tipoDocumentoId: request.TipoDocumentoId,
-            numeroDocumento: request.NumeroDocumento,
-            fechaNacimiento: request.FechaNacimiento,
-            sexoId: request.SexoId
-        );
-
-        _context.Personas.Add(nuevaPersona);
-        await _context.SaveChangesAsync();
-
-        var personaDto = new CreatePersonaDto
-        {
-            Nombre = nuevaPersona.Nombre,
-            Apellido = nuevaPersona.Apellido,
-            TipoDocumentoId = nuevaPersona.TipoDocumentoId,
-            NumeroDocumento = nuevaPersona.NumeroDocumento,
-            FechaNacimiento = nuevaPersona.FechaNacimiento,
-            SexoId = nuevaPersona.SexoId
-        };
-
-        return CreatedAtAction(nameof(GetById), new { id = nuevaPersona.Id }, personaDto);
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePersonaDto request)
     {
-        var persona = await _context.Personas.FindAsync(id);
-        if (persona is null)
-            return NotFound();
-
-        var tipoDocExiste = await _context.TiposDocumento.AnyAsync(td => td.Id == request.TipoDocumentoId);
-        if (!tipoDocExiste)
-            return BadRequest("El tipo de documento especificado no existe.");
-
-        if (request.SexoId.HasValue)
+        try
         {
-            var sexoExiste = await _context.Sexos.AnyAsync(s => s.Id == request.SexoId.Value);
-            if (!sexoExiste)
-                return BadRequest("El sexo especificado no existe.");
+            await _useCase.UpdateAsync(id, request);
+            return NoContent();
         }
-
-        persona.Update(
-            nombre: request.Nombre,
-            apellido: request.Apellido,
-            tipoDocumentoId: request.TipoDocumentoId,
-            numeroDocumento: request.NumeroDocumento,
-            fechaNacimiento: request.FechaNacimiento,
-            sexoId: request.SexoId
-        );
-
-        await _context.SaveChangesAsync();
-        return NoContent();
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpDelete("{id:guid}")]
     [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var persona = await _context.Personas.FindAsync(id);
-        if (persona is null)
-            return NotFound();
-
-        _context.Personas.Remove(persona);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        try
+        {
+            await _useCase.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 }

@@ -1,10 +1,8 @@
 using Api.Security;
 using Application.DTOs.Paciente;
-using Domain.Entities;
-using Infrastructure.Persistence.Context;
+using Application.UseCases.Paciente;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers;
 
@@ -13,108 +11,53 @@ namespace Api.Controllers;
 [Authorize(Roles = AppRoles.Staff)]
 public sealed class PacientesController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly PacienteCrudUseCase _useCase;
 
-    public PacientesController(AppDbContext context)
-    {
-        _context = context;
-    }
+    public PacientesController(PacienteCrudUseCase useCase) => _useCase = useCase;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
-    {
-        var pacientes = await _context.Pacientes
-            .Include(p => p.Persona)
-            .Select(p => new CreatePacienteDto
-            {
-                PersonaId = p.PersonaId,
-                Activo = p.Activo
-            })
-            .ToListAsync();
-
-        return Ok(pacientes);
-    }
+    public async Task<IActionResult> GetAll() => Ok(await _useCase.GetAllAsync());
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var paciente = await _context.Pacientes
-            .Where(p => p.Id == id)
-            .Select(p => new CreatePacienteDto
-            {
-                PersonaId = p.PersonaId,
-                Activo = p.Activo
-            })
-            .FirstOrDefaultAsync();
-
-        if (paciente is null)
-            return NotFound();
-
-        return Ok(paciente);
+        var entity = await _useCase.GetByIdAsync(id);
+        return entity is null ? NotFound() : Ok(entity);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreatePacienteDto request)
     {
-        var personaExiste = await _context.Personas.AnyAsync(p => p.Id == request.PersonaId);
-        if (!personaExiste)
-            return BadRequest("La persona especificada no existe en la base de datos.");
-
-        var yaEsPaciente = await _context.Pacientes.AnyAsync(p => p.PersonaId == request.PersonaId);
-        if (yaEsPaciente)
-            return BadRequest("Esta persona ya está registrada como paciente.");
-
-        var nuevoPaciente = new PacienteEntity(
-            personaId: request.PersonaId,
-            activo: request.Activo
-        );
-
-        _context.Pacientes.Add(nuevoPaciente);
-        await _context.SaveChangesAsync();
-
-        var pacienteDto = new CreatePacienteDto
+        try
         {
-            PersonaId = nuevoPaciente.PersonaId,
-            Activo = nuevoPaciente.Activo
-        };
-
-        return CreatedAtAction(nameof(GetById), new { id = nuevoPaciente.Id }, pacienteDto);
+            var entity = await _useCase.CreateAsync(request);
+            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, request);
+        }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePacienteDto request)
     {
-        var paciente = await _context.Pacientes.FindAsync(id);
-        if (paciente is null)
-            return NotFound();
-
-        var personaExiste = await _context.Personas.AnyAsync(p => p.Id == request.PersonaId);
-        if (!personaExiste)
-            return BadRequest("La persona especificada no existe.");
-
-        paciente.Update(
-            personaId: request.PersonaId,
-            activo: request.Activo
-        );
-
-        await _context.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _useCase.UpdateAsync(id, request);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpDelete("{id:guid}")]
     [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var paciente = await _context.Pacientes.FindAsync(id);
-        if (paciente is null)
-            return NotFound();
-
-        paciente.Update(
-            personaId: paciente.PersonaId,
-            activo: false
-        );
-
-        await _context.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _useCase.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 }

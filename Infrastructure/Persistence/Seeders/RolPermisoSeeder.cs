@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.ValueObjects;
 using Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,10 +16,9 @@ public class RolPermisoSeeder(AppDbContext context)
 
         if (!roles.Any() || !permisos.Any()) return;
 
-        var adminRol = roles.FirstOrDefault(r => r.NombreRol == "Administrador");
-        var medicoRol = roles.FirstOrDefault(r => r.NombreRol == "Médico");
-        var recepcionistaRol = roles.FirstOrDefault(r => r.NombreRol == "Recepcionista");
-        var pacienteRol = roles.FirstOrDefault(r => r.NombreRol == "Paciente");
+        var adminRol = roles.FirstOrDefault(r => r.NombreRol == RolValueObject.Administrador);
+        var profesionalRol = roles.FirstOrDefault(r => r.NombreRol == RolValueObject.Profesional);
+        var recepcionistaRol = roles.FirstOrDefault(r => r.NombreRol == RolValueObject.Recepcionista);
 
         var rolesPermisos = new List<RolPermisoEntity>();
 
@@ -30,12 +30,12 @@ public class RolPermisoSeeder(AppDbContext context)
             }
         }
 
-        if (medicoRol != null)
+        if (profesionalRol != null)
         {
-            var codigosMedico = new[] { "citas:ver", "citas:modificar", "historias:ver", "historias:escribir", "pacientes:ver" };
-            foreach (var p in permisos.Where(p => codigosMedico.Contains(p.Codigo)))
+            var codigosProfesional = new[] { "citas:ver", "citas:modificar", "historias:ver", "historias:escribir", "pacientes:ver" };
+            foreach (var p in permisos.Where(p => codigosProfesional.Contains(p.Codigo)))
             {
-                rolesPermisos.Add(new RolPermisoEntity(medicoRol.Id, p.Id));
+                rolesPermisos.Add(new RolPermisoEntity(profesionalRol.Id, p.Id));
             }
         }
 
@@ -45,15 +45,6 @@ public class RolPermisoSeeder(AppDbContext context)
             foreach (var p in permisos.Where(p => codigosRecep.Contains(p.Codigo)))
             {
                 rolesPermisos.Add(new RolPermisoEntity(recepcionistaRol.Id, p.Id));
-            }
-        }
-
-        if (pacienteRol != null)
-        {
-            var codigosPaciente = new[] { "citas:crear", "citas:ver", "citas:cancelar", "historias:ver" };
-            foreach (var p in permisos.Where(p => codigosPaciente.Contains(p.Codigo)))
-            {
-                rolesPermisos.Add(new RolPermisoEntity(pacienteRol.Id, p.Id));
             }
         }
 

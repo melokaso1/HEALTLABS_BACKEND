@@ -1,10 +1,8 @@
 using Api.Security;
 using Application.DTOs.Rol;
-using Domain.Entities;
-using Infrastructure.Persistence.Context;
+using Application.UseCases.Rol;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers;
 
@@ -13,100 +11,52 @@ namespace Api.Controllers;
 [Authorize(Roles = AppRoles.Admin)]
 public sealed class RolesController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly RolCrudUseCase _useCase;
 
-    public RolesController(AppDbContext context)
-    {
-        _context = context;
-    }
+    public RolesController(RolCrudUseCase useCase) => _useCase = useCase;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
-    {
-        var roles = await _context.Roles
-            .Select(r => new CreateRolDto
-            {
-                NombreRol = r.NombreRol,
-                Descripcion = r.Descripcion,
-                Activo = r.Activo
-            })
-            .ToListAsync();
-
-        return Ok(roles);
-    }
+    public async Task<IActionResult> GetAll() => Ok(await _useCase.GetAllAsync());
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var rol = await _context.Roles
-            .Where(r => r.Id == id)
-            .Select(r => new CreateRolDto
-            {
-                NombreRol = r.NombreRol,
-                Descripcion = r.Descripcion,
-                Activo = r.Activo
-            })
-            .FirstOrDefaultAsync();
-
-        if (rol is null)
-            return NotFound();
-
-        return Ok(rol);
+        var entity = await _useCase.GetByIdAsync(id);
+        return entity is null ? NotFound() : Ok(entity);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateRolDto request)
     {
-        var nuevoRol = new RolEntity(
-            nombreRol: request.NombreRol,
-            descripcion: request.Descripcion,
-            activo: request.Activo
-        );
-
-        _context.Roles.Add(nuevoRol);
-        await _context.SaveChangesAsync();
-
-        var rolDto = new CreateRolDto
+        try
         {
-            NombreRol = nuevoRol.NombreRol,
-            Descripcion = nuevoRol.Descripcion,
-            Activo = nuevoRol.Activo
-        };
-
-        return CreatedAtAction(nameof(GetById), new { id = nuevoRol.Id }, rolDto);
+            var entity = await _useCase.CreateAsync(request);
+            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, request);
+        }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateRolDto request)
     {
-        var rol = await _context.Roles.FindAsync(id);
-        if (rol is null)
-            return NotFound();
-
-        rol.Update(
-            nombreRol: request.NombreRol,
-            descripcion: request.Descripcion,
-            activo: request.Activo
-        );
-
-        await _context.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _useCase.UpdateAsync(id, request);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var rol = await _context.Roles.FindAsync(id);
-        if (rol is null)
-            return NotFound();
-
-        rol.Update(
-            nombreRol: rol.NombreRol,
-            descripcion: rol.Descripcion,
-            activo: false
-        );
-
-        await _context.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _useCase.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 }

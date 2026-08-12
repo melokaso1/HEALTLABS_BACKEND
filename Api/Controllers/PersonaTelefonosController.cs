@@ -1,10 +1,8 @@
 using Api.Security;
 using Application.DTOs.PersonaTelefono;
-using Domain.Entities;
-using Infrastructure.Persistence.Context;
+using Application.UseCases.PersonaTelefono;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers;
 
@@ -13,161 +11,56 @@ namespace Api.Controllers;
 [Authorize(Roles = AppRoles.Staff)]
 public sealed class PersonaTelefonosController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly PersonaTelefonoCrudUseCase _useCase;
 
-    public PersonaTelefonosController(AppDbContext context)
-    {
-        _context = context;
-    }
+    public PersonaTelefonosController(PersonaTelefonoCrudUseCase useCase) => _useCase = useCase;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
-    {
-        var telefonos = await _context.PersonasTelefono
-            .Include(pt => pt.Persona)
-            .Select(pt => new CreatePersonaTelefonoDto
-            {
-                PersonaId = pt.PersonaId,
-                Telefono = pt.Telefono,
-                Tipo = pt.Tipo,
-                Principal = pt.Principal
-            })
-            .ToListAsync();
-
-        return Ok(telefonos);
-    }
+    public async Task<IActionResult> GetAll() => Ok(await _useCase.GetAllAsync());
 
     [HttpGet("persona/{personaId:guid}")]
-    public async Task<IActionResult> GetByPersona(Guid personaId)
-    {
-        var telefonos = await _context.PersonasTelefono
-            .Where(pt => pt.PersonaId == personaId)
-            .Select(pt => new CreatePersonaTelefonoDto
-            {
-                PersonaId = pt.PersonaId,
-                Telefono = pt.Telefono,
-                Tipo = pt.Tipo,
-                Principal = pt.Principal
-            })
-            .ToListAsync();
-
-        return Ok(telefonos);
-    }
+    public async Task<IActionResult> GetByPersonaId(Guid personaId) =>
+        Ok(await _useCase.FindAsync(entity => entity.PersonaId == personaId));
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var telefono = await _context.PersonasTelefono
-            .Where(pt => pt.Id == id)
-            .Select(pt => new CreatePersonaTelefonoDto
-            {
-                PersonaId = pt.PersonaId,
-                Telefono = pt.Telefono,
-                Tipo = pt.Tipo,
-                Principal = pt.Principal
-            })
-            .FirstOrDefaultAsync();
-
-        if (telefono is null)
-            return NotFound();
-
-        return Ok(telefono);
+        var entity = await _useCase.GetByIdAsync(id);
+        return entity is null ? NotFound() : Ok(entity);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreatePersonaTelefonoDto request)
     {
-        var personaExiste = await _context.Personas.AnyAsync(p => p.Id == request.PersonaId);
-        if (!personaExiste)
-            return BadRequest("La persona especificada no existe.");
-
-        var telefonoExiste = await _context.PersonasTelefono
-            .AnyAsync(pt => pt.PersonaId == request.PersonaId && pt.Telefono == request.Telefono);
-        if (telefonoExiste)
-            return BadRequest("Este número de teléfono ya está registrado para esta persona.");
-
-        if (request.Principal)
+        try
         {
-            var otrosPrincipales = await _context.PersonasTelefono
-                .Where(pt => pt.PersonaId == request.PersonaId && pt.Principal)
-                .ToListAsync();
-
-            foreach (var item in otrosPrincipales)
-            {
-                item.Update(item.PersonaId, item.Telefono, item.Tipo, false);
-            }
+            var entity = await _useCase.CreateAsync(request);
+            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, request);
         }
-
-        var nuevoTelefono = new PersonaTelefonoEntity(
-            personaId: request.PersonaId,
-            telefono: request.Telefono,
-            tipo: request.Tipo,
-            principal: request.Principal
-        );
-
-        _context.PersonasTelefono.Add(nuevoTelefono);
-        await _context.SaveChangesAsync();
-
-        var telefonoDto = new CreatePersonaTelefonoDto
-        {
-            PersonaId = nuevoTelefono.PersonaId,
-            Telefono = nuevoTelefono.Telefono,
-            Tipo = nuevoTelefono.Tipo,
-            Principal = nuevoTelefono.Principal
-        };
-
-        return CreatedAtAction(nameof(GetById), new { id = nuevoTelefono.Id }, telefonoDto);
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePersonaTelefonoDto request)
     {
-        var telefono = await _context.PersonasTelefono.FindAsync(id);
-        if (telefono is null)
-            return NotFound();
-
-        var personaExiste = await _context.Personas.AnyAsync(p => p.Id == request.PersonaId);
-        if (!personaExiste)
-            return BadRequest("La persona especificada no existe.");
-
-        var telefonoDuplicado = await _context.PersonasTelefono
-            .AnyAsync(pt => pt.PersonaId == request.PersonaId && pt.Telefono == request.Telefono && pt.Id != id);
-        if (telefonoDuplicado)
-            return BadRequest("Este número de teléfono ya se encuentra registrado en otro registro para esta persona.");
-
-        if (request.Principal)
+        try
         {
-            var otrosPrincipales = await _context.PersonasTelefono
-                .Where(pt => pt.PersonaId == request.PersonaId && pt.Principal && pt.Id != id)
-                .ToListAsync();
-
-            foreach (var item in otrosPrincipales)
-            {
-                item.Update(item.PersonaId, item.Telefono, item.Tipo, false);
-            }
+            await _useCase.UpdateAsync(id, request);
+            return NoContent();
         }
-
-        telefono.Update(
-            personaId: request.PersonaId,
-            telefono: request.Telefono,
-            tipo: request.Tipo,
-            principal: request.Principal
-        );
-
-        await _context.SaveChangesAsync();
-        return NoContent();
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var telefono = await _context.PersonasTelefono.FindAsync(id);
-        if (telefono is null)
-            return NotFound();
-
-        _context.PersonasTelefono.Remove(telefono);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        try
+        {
+            await _useCase.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 }

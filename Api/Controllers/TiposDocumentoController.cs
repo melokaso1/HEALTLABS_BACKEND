@@ -1,10 +1,8 @@
 using Api.Security;
 using Application.DTOs.TipoDocumento;
-using Domain.Entities;
-using Infrastructure.Persistence.Context;
+using Application.UseCases.TipoDocumento;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers;
 
@@ -13,92 +11,52 @@ namespace Api.Controllers;
 [Authorize(Roles = AppRoles.Admin)]
 public sealed class TiposDocumentoController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly TipoDocumentoCrudUseCase _useCase;
 
-    public TiposDocumentoController(AppDbContext context)
-    {
-        _context = context;
-    }
+    public TiposDocumentoController(TipoDocumentoCrudUseCase useCase) => _useCase = useCase;
 
     [HttpGet]
-    [AllowAnonymous]
-    public async Task<IActionResult> GetAll()
-    {
-        var tiposDocumento = await _context.TiposDocumento
-            .Select(td => new CreateTipoDocumentoDto
-            {
-                Codigo = td.Codigo,
-                Nombre = td.Nombre
-            })
-            .ToListAsync();
-
-        return Ok(tiposDocumento);
-    }
+    public async Task<IActionResult> GetAll() => Ok(await _useCase.GetAllAsync());
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var tipoDocumento = await _context.TiposDocumento
-            .Where(td => td.Id == id)
-            .Select(td => new CreateTipoDocumentoDto
-            {
-                Codigo = td.Codigo,
-                Nombre = td.Nombre
-            })
-            .FirstOrDefaultAsync();
-
-        if (tipoDocumento is null)
-            return NotFound();
-
-        return Ok(tipoDocumento);
+        var entity = await _useCase.GetByIdAsync(id);
+        return entity is null ? NotFound() : Ok(entity);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTipoDocumentoDto request)
     {
-        var nuevoTipoDocumento = new TipoDocumentoEntity(
-            codigo: request.Codigo,
-            nombre: request.Nombre
-        );
-
-        _context.TiposDocumento.Add(nuevoTipoDocumento);
-        await _context.SaveChangesAsync();
-
-        var tipoDocumentoDto = new CreateTipoDocumentoDto
+        try
         {
-            Codigo = nuevoTipoDocumento.Codigo,
-            Nombre = nuevoTipoDocumento.Nombre
-        };
-
-        return CreatedAtAction(nameof(GetById), new { id = nuevoTipoDocumento.Id }, tipoDocumentoDto);
+            var entity = await _useCase.CreateAsync(request);
+            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, request);
+        }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTipoDocumentoDto request)
     {
-        var tipoDocumento = await _context.TiposDocumento.FindAsync(id);
-        if (tipoDocumento is null)
-            return NotFound();
-
-        tipoDocumento.Update(
-            codigo: request.Codigo,
-            nombre: request.Nombre
-        );
-
-        await _context.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _useCase.UpdateAsync(id, request);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var tipoDocumento = await _context.TiposDocumento.FindAsync(id);
-        if (tipoDocumento is null)
-            return NotFound();
-
-        _context.TiposDocumento.Remove(tipoDocumento);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        try
+        {
+            await _useCase.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 }

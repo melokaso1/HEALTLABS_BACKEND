@@ -1,10 +1,8 @@
 using Api.Security;
 using Application.DTOs.Tratamiento;
-using Domain.Entities;
-using Infrastructure.Persistence.Context;
+using Application.UseCases.Tratamiento;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers;
 
@@ -13,108 +11,54 @@ namespace Api.Controllers;
 [Authorize(Roles = AppRoles.Admin)]
 public sealed class TratamientosController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly TratamientoCrudUseCase _useCase;
 
-    public TratamientosController(AppDbContext context)
-    {
-        _context = context;
-    }
+    public TratamientosController(TratamientoCrudUseCase useCase) => _useCase = useCase;
 
     [HttpGet]
     [Authorize(Roles = AppRoles.Todos)]
-    public async Task<IActionResult> GetAll()
-    {
-        var tratamientos = await _context.Tratamientos
-            .Select(t => new CreateTratamientoDto
-            {
-                Codigo = t.Codigo,
-                Nombre = t.Nombre,
-                Descripcion = t.Descripcion,
-                Activo = t.Activo
-            })
-            .ToListAsync();
-
-        return Ok(tratamientos);
-    }
+    public async Task<IActionResult> GetAll() => Ok(await _useCase.GetAllAsync());
 
     [HttpGet("{id:guid}")]
     [Authorize(Roles = AppRoles.Todos)]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var tratamiento = await _context.Tratamientos
-            .Where(t => t.Id == id)
-            .Select(t => new CreateTratamientoDto
-            {
-                Codigo = t.Codigo,
-                Nombre = t.Nombre,
-                Descripcion = t.Descripcion,
-                Activo = t.Activo
-            })
-            .FirstOrDefaultAsync();
-
-        if (tratamiento is null)
-            return NotFound();
-
-        return Ok(tratamiento);
+        var entity = await _useCase.GetByIdAsync(id);
+        return entity is null ? NotFound() : Ok(entity);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTratamientoDto request)
     {
-        var nuevoTratamiento = new TratamientoEntity(
-            codigo: request.Codigo,
-            nombre: request.Nombre,
-            descripcion: request.Descripcion,
-            activo: request.Activo
-        );
-
-        _context.Tratamientos.Add(nuevoTratamiento);
-        await _context.SaveChangesAsync();
-
-        var tratamientoResponse = new CreateTratamientoDto
+        try
         {
-            Codigo = nuevoTratamiento.Codigo,
-            Nombre = nuevoTratamiento.Nombre,
-            Descripcion = nuevoTratamiento.Descripcion,
-            Activo = nuevoTratamiento.Activo
-        };
-
-        return CreatedAtAction(nameof(GetById), new { id = nuevoTratamiento.Id }, tratamientoResponse);
+            var entity = await _useCase.CreateAsync(request);
+            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, request);
+        }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTratamientoDto request)
     {
-        var tratamiento = await _context.Tratamientos.FindAsync(id);
-        if (tratamiento is null)
-            return NotFound();
-
-        tratamiento.Update(
-            codigo: request.Codigo,
-            nombre: request.Nombre,
-            descripcion: request.Descripcion,
-            activo: request.Activo
-        );
-
-        await _context.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _useCase.UpdateAsync(id, request);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var tratamiento = await _context.Tratamientos.FindAsync(id);
-        if (tratamiento is null)
-            return NotFound();
-
-        tratamiento.Update(
-            codigo: tratamiento.Codigo,
-            nombre: tratamiento.Nombre,
-            descripcion: tratamiento.Descripcion,
-            activo: false
-        );
-
-        await _context.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _useCase.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 }

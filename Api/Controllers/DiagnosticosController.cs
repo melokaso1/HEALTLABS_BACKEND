@@ -1,10 +1,8 @@
 using Api.Security;
 using Application.DTOs.Diagnostico;
-using Domain.Entities;
-using Infrastructure.Persistence.Context;
+using Application.UseCases.Diagnostico;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers;
 
@@ -13,102 +11,54 @@ namespace Api.Controllers;
 [Authorize(Roles = AppRoles.Admin)]
 public sealed class DiagnosticosController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly DiagnosticoCrudUseCase _useCase;
 
-    public DiagnosticosController(AppDbContext context)
-    {
-        _context = context;
-    }
+    public DiagnosticosController(DiagnosticoCrudUseCase useCase) => _useCase = useCase;
 
     [HttpGet]
     [Authorize(Roles = AppRoles.Todos)]
-    public async Task<IActionResult> GetAll()
-    {
-        var diagnosticos = await _context.Diagnosticos
-            .Select(d => new CreateDiagnosticoDto
-            {
-                CodigoCie10 = d.CodigoCie10,
-                Descripcion = d.Descripcion,
-                Activo = d.Activo
-            })
-            .ToListAsync();
-
-        return Ok(diagnosticos);
-    }
+    public async Task<IActionResult> GetAll() => Ok(await _useCase.GetAllAsync());
 
     [HttpGet("{id:guid}")]
     [Authorize(Roles = AppRoles.Todos)]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var diagnostico = await _context.Diagnosticos
-            .Where(d => d.Id == id)
-            .Select(d => new CreateDiagnosticoDto
-            {
-                CodigoCie10 = d.CodigoCie10,
-                Descripcion = d.Descripcion,
-                Activo = d.Activo
-            })
-            .FirstOrDefaultAsync();
-
-        if (diagnostico is null)
-            return NotFound();
-
-        return Ok(diagnostico);
+        var entity = await _useCase.GetByIdAsync(id);
+        return entity is null ? NotFound() : Ok(entity);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateDiagnosticoDto request)
     {
-        var nuevoDiagnostico = new DiagnosticoEntity(
-            codigoCie10: request.CodigoCie10,
-            descripcion: request.Descripcion,
-            activo: request.Activo
-        );
-
-        _context.Diagnosticos.Add(nuevoDiagnostico);
-        await _context.SaveChangesAsync();
-
-        var diagnosticoDto = new CreateDiagnosticoDto
+        try
         {
-            CodigoCie10 = nuevoDiagnostico.CodigoCie10,
-            Descripcion = nuevoDiagnostico.Descripcion,
-            Activo = nuevoDiagnostico.Activo
-        };
-
-        return CreatedAtAction(nameof(GetById), new { id = nuevoDiagnostico.Id }, diagnosticoDto);
+            var entity = await _useCase.CreateAsync(request);
+            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, request);
+        }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateDiagnosticoDto request)
     {
-        var diagnostico = await _context.Diagnosticos.FindAsync(id);
-        if (diagnostico is null)
-            return NotFound();
-
-        diagnostico.Update(
-            codigoCie10: request.CodigoCie10,
-            descripcion: request.Descripcion,
-            activo: request.Activo
-        );
-
-        await _context.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _useCase.UpdateAsync(id, request);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var diagnostico = await _context.Diagnosticos.FindAsync(id);
-        if (diagnostico is null)
-            return NotFound();
-
-        diagnostico.Update(
-            codigoCie10: diagnostico.CodigoCie10,
-            descripcion: diagnostico.Descripcion,
-            activo: false
-        );
-
-        await _context.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _useCase.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 }

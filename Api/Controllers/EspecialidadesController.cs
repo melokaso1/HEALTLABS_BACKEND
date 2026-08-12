@@ -1,10 +1,8 @@
 using Api.Security;
 using Application.DTOs.Especialidad;
-using Domain.Entities;
-using Infrastructure.Persistence.Context;
+using Application.UseCases.Especialidad;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers;
 
@@ -13,92 +11,52 @@ namespace Api.Controllers;
 [Authorize(Roles = AppRoles.Admin)]
 public sealed class EspecialidadesController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly EspecialidadCrudUseCase _useCase;
 
-    public EspecialidadesController(AppDbContext context)
-    {
-        _context = context;
-    }
+    public EspecialidadesController(EspecialidadCrudUseCase useCase) => _useCase = useCase;
 
     [HttpGet]
-    [AllowAnonymous]
-    public async Task<IActionResult> GetAll()
-    {
-        var especialidades = await _context.Especialidades
-            .Select(e => new CreateEspecialidadDto
-            {
-                Nombre = e.Nombre,
-                Descripcion = e.Descripcion
-            })
-            .ToListAsync();
-
-        return Ok(especialidades);
-    }
+    public async Task<IActionResult> GetAll() => Ok(await _useCase.GetAllAsync());
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var especialidad = await _context.Especialidades
-            .Where(e => e.Id == id)
-            .Select(e => new CreateEspecialidadDto
-            {
-                Nombre = e.Nombre,
-                Descripcion = e.Descripcion
-            })
-            .FirstOrDefaultAsync();
-
-        if (especialidad is null)
-            return NotFound();
-
-        return Ok(especialidad);
+        var entity = await _useCase.GetByIdAsync(id);
+        return entity is null ? NotFound() : Ok(entity);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateEspecialidadDto request)
     {
-        var nuevaEspecialidad = new EspecialidadEntity(
-            nombre: request.Nombre,
-            descripcion: request.Descripcion
-        );
-
-        _context.Especialidades.Add(nuevaEspecialidad);
-        await _context.SaveChangesAsync();
-
-        var especialidadDto = new CreateEspecialidadDto
+        try
         {
-            Nombre = nuevaEspecialidad.Nombre,
-            Descripcion = nuevaEspecialidad.Descripcion
-        };
-
-        return CreatedAtAction(nameof(GetById), new { id = nuevaEspecialidad.Id }, especialidadDto);
+            var entity = await _useCase.CreateAsync(request);
+            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, request);
+        }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateEspecialidadDto request)
     {
-        var especialidad = await _context.Especialidades.FindAsync(id);
-        if (especialidad is null)
-            return NotFound();
-
-        especialidad.Update(
-            nombre: request.Nombre,
-            descripcion: request.Descripcion
-        );
-
-        await _context.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _useCase.UpdateAsync(id, request);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var especialidad = await _context.Especialidades.FindAsync(id);
-        if (especialidad is null)
-            return NotFound();
-
-        _context.Especialidades.Remove(especialidad);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        try
+        {
+            await _useCase.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 }

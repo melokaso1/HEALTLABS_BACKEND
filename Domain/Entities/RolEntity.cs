@@ -1,3 +1,5 @@
+using Domain.ValueObjects;
+
 namespace Domain.Entities
 {
     public class RolEntity
@@ -14,14 +16,14 @@ namespace Domain.Entities
         public RolEntity(string nombreRol, string? descripcion, bool activo = true)
         {
             Id = Guid.NewGuid();
-            NombreRol = nombreRol;
+            NombreRol = RolValueObject.Create(nombreRol).Value;
             Descripcion = descripcion;
             Activo = activo;
         }
 
         public void Update(string nombreRol, string? descripcion, bool activo)
         {
-            NombreRol = nombreRol;
+            NombreRol = RolValueObject.Create(nombreRol).Value;
             Descripcion = descripcion;
             Activo = activo;
         }

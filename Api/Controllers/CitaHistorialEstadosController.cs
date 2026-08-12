@@ -1,10 +1,8 @@
 using Api.Security;
 using Application.DTOs.CitaHistorialEstado;
-using Domain.Entities;
-using Infrastructure.Persistence.Context;
+using Application.UseCases.CitaHistorialEstado;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers;
 
@@ -13,171 +11,60 @@ namespace Api.Controllers;
 [Authorize(Roles = AppRoles.Staff)]
 public sealed class CitaHistorialEstadosController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly CitaHistorialEstadoCrudUseCase _useCase;
 
-    public CitaHistorialEstadosController(AppDbContext context)
-    {
-        _context = context;
-    }
+    public CitaHistorialEstadosController(CitaHistorialEstadoCrudUseCase useCase) => _useCase = useCase;
 
     [HttpGet]
     [Authorize(Roles = AppRoles.Todos)]
-    public async Task<IActionResult> GetAll()
-    {
-        var historial = await _context.CitasHistorialEstado
-            .Include(h => h.Cita)
-            .Include(h => h.EstadoAnterior)
-            .Include(h => h.EstadoNuevo)
-            .Include(h => h.Usuario)
-            .Select(h => new CreateCitaHistorialEstadoDto
-            {
-                CitaId = h.CitaId,
-                EstadoAnteriorId = h.EstadoAnteriorId,
-                EstadoNuevoId = h.EstadoNuevoId,
-                UsuarioId = h.UsuarioId,
-                Observacion = h.Observacion
-            })
-            .ToListAsync();
-
-        return Ok(historial);
-    }
+    public async Task<IActionResult> GetAll() => Ok(await _useCase.GetAllAsync());
 
     [HttpGet("cita/{citaId:guid}")]
     [Authorize(Roles = AppRoles.Todos)]
-    public async Task<IActionResult> GetByCita(Guid citaId)
-    {
-        var historial = await _context.CitasHistorialEstado
-            .Where(h => h.CitaId == citaId)
-            .OrderByDescending(h => h.FechaCambio)
-            .Select(h => new CreateCitaHistorialEstadoDto
-            {
-                CitaId = h.CitaId,
-                EstadoAnteriorId = h.EstadoAnteriorId,
-                EstadoNuevoId = h.EstadoNuevoId,
-                UsuarioId = h.UsuarioId,
-                Observacion = h.Observacion
-            })
-            .ToListAsync();
-
-        return Ok(historial);
-    }
+    public async Task<IActionResult> GetByCitaId(Guid citaId) =>
+        Ok(await _useCase.FindAsync(entity => entity.CitaId == citaId));
 
     [HttpGet("{id:guid}")]
     [Authorize(Roles = AppRoles.Todos)]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var historial = await _context.CitasHistorialEstado
-            .Where(h => h.Id == id)
-            .Select(h => new CreateCitaHistorialEstadoDto
-            {
-                CitaId = h.CitaId,
-                EstadoAnteriorId = h.EstadoAnteriorId,
-                EstadoNuevoId = h.EstadoNuevoId,
-                UsuarioId = h.UsuarioId,
-                Observacion = h.Observacion
-            })
-            .FirstOrDefaultAsync();
-
-        if (historial is null)
-            return NotFound();
-
-        return Ok(historial);
+        var entity = await _useCase.GetByIdAsync(id);
+        return entity is null ? NotFound() : Ok(entity);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateCitaHistorialEstadoDto request)
     {
-        var citaExiste = await _context.Citas.AnyAsync(c => c.Id == request.CitaId);
-        if (!citaExiste)
-            return BadRequest("La cita especificada no existe.");
-
-        var estadoAntExiste = await _context.EstadosCita.AnyAsync(e => e.Id == request.EstadoAnteriorId);
-        if (!estadoAntExiste)
-            return BadRequest("El estado anterior especificado no existe.");
-
-        var estadoNvoExiste = await _context.EstadosCita.AnyAsync(e => e.Id == request.EstadoNuevoId);
-        if (!estadoNvoExiste)
-            return BadRequest("El nuevo estado especificado no existe.");
-
-        if (request.UsuarioId.HasValue)
+        try
         {
-            var usuarioExiste = await _context.Usuarios.AnyAsync(u => u.Id == request.UsuarioId.Value);
-            if (!usuarioExiste)
-                return BadRequest("El usuario especificado no existe.");
+            var entity = await _useCase.CreateAsync(request);
+            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, request);
         }
-
-        var nuevoHistorial = new CitaHistorialEstadoEntity(
-            citaId: request.CitaId,
-            estadoAnteriorId: request.EstadoAnteriorId,
-            estadoNuevoId: request.EstadoNuevoId,
-            usuarioId: request.UsuarioId,
-            observacion: request.Observacion
-        );
-
-        _context.CitasHistorialEstado.Add(nuevoHistorial);
-        await _context.SaveChangesAsync();
-
-        var historialDto = new CreateCitaHistorialEstadoDto
-        {
-            CitaId = nuevoHistorial.CitaId,
-            EstadoAnteriorId = nuevoHistorial.EstadoAnteriorId,
-            EstadoNuevoId = nuevoHistorial.EstadoNuevoId,
-            UsuarioId = nuevoHistorial.UsuarioId,
-            Observacion = nuevoHistorial.Observacion
-        };
-
-        return CreatedAtAction(nameof(GetById), new { id = nuevoHistorial.Id }, historialDto);
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] CreateCitaHistorialEstadoDto request)
     {
-        var historial = await _context.CitasHistorialEstado.FindAsync(id);
-        if (historial is null)
-            return NotFound();
-
-        var citaExiste = await _context.Citas.AnyAsync(c => c.Id == request.CitaId);
-        if (!citaExiste)
-            return BadRequest("La cita especificada no existe.");
-
-        var estadoAntExiste = await _context.EstadosCita.AnyAsync(e => e.Id == request.EstadoAnteriorId);
-        if (!estadoAntExiste)
-            return BadRequest("El estado anterior especificado no existe.");
-
-        var estadoNvoExiste = await _context.EstadosCita.AnyAsync(e => e.Id == request.EstadoNuevoId);
-        if (!estadoNvoExiste)
-            return BadRequest("El nuevo estado especificado no existe.");
-
-        if (request.UsuarioId.HasValue)
+        try
         {
-            var usuarioExiste = await _context.Usuarios.AnyAsync(u => u.Id == request.UsuarioId.Value);
-            if (!usuarioExiste)
-                return BadRequest("El usuario especificado no existe.");
+            await _useCase.UpdateAsync(id, request);
+            return NoContent();
         }
-
-        historial.Update(
-            citaId: request.CitaId,
-            estadoAnteriorId: request.EstadoAnteriorId,
-            estadoNuevoId: request.EstadoNuevoId,
-            usuarioId: request.UsuarioId,
-            observacion: request.Observacion
-        );
-
-        await _context.SaveChangesAsync();
-        return NoContent();
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpDelete("{id:guid}")]
     [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var historial = await _context.CitasHistorialEstado.FindAsync(id);
-        if (historial is null)
-            return NotFound();
-
-        _context.CitasHistorialEstado.Remove(historial);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        try
+        {
+            await _useCase.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 }

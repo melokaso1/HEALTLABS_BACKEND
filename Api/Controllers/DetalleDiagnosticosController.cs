@@ -1,10 +1,8 @@
 using Api.Security;
 using Application.DTOs.DetalleDiagnostico;
-using Domain.Entities;
-using Infrastructure.Persistence.Context;
+using Application.UseCases.DetalleDiagnostico;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers;
 
@@ -13,178 +11,59 @@ namespace Api.Controllers;
 [Authorize(Roles = AppRoles.Medico)]
 public sealed class DetalleDiagnosticosController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly DetalleDiagnosticoCrudUseCase _useCase;
 
-    public DetalleDiagnosticosController(AppDbContext context)
-    {
-        _context = context;
-    }
+    public DetalleDiagnosticosController(DetalleDiagnosticoCrudUseCase useCase) => _useCase = useCase;
 
-    // GET: api/DetalleDiagnosticos
     [HttpGet]
     [Authorize(Roles = AppRoles.Todos)]
-    public async Task<IActionResult> GetAll()
-    {
-        var detalles = await _context.DetallesDiagnostico
-            .Include(d => d.DetalleCita)
-            .Include(d => d.Diagnostico)
-            .Select(d => new CreateDetalleDiagnosticoDto
-            {
-                DetalleCitaId = d.DetalleCitaId,
-                DiagnosticoId = d.DiagnosticoId,
-                Principal = d.Principal
-            })
-            .ToListAsync();
+    public async Task<IActionResult> GetAll() => Ok(await _useCase.GetAllAsync());
 
-        return Ok(detalles);
-    }
-
-    // GET: api/DetallesDiagnostico/detalle-cita/{detalleCitaId}
     [HttpGet("detalle-cita/{detalleCitaId:guid}")]
     [Authorize(Roles = AppRoles.Todos)]
-    public async Task<IActionResult> GetByDetalleCita(Guid detalleCitaId)
-    {
-        var detalles = await _context.DetallesDiagnostico
-            .Include(d => d.Diagnostico)
-            .Where(d => d.DetalleCitaId == detalleCitaId)
-            .Select(d => new CreateDetalleDiagnosticoDto
-            {
-                DetalleCitaId = d.DetalleCitaId,
-                DiagnosticoId = d.DiagnosticoId,
-                Principal = d.Principal
-            })
-            .ToListAsync();
+    public async Task<IActionResult> GetByDetalleCitaId(Guid detalleCitaId) =>
+        Ok(await _useCase.FindAsync(entity => entity.DetalleCitaId == detalleCitaId));
 
-        return Ok(detalles);
-    }
-
-    // GET: api/DetallesDiagnostico/{id}
     [HttpGet("{id:guid}")]
     [Authorize(Roles = AppRoles.Todos)]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var detalle = await _context.DetallesDiagnostico
-            .Where(d => d.Id == id)
-            .Select(d => new CreateDetalleDiagnosticoDto
-            {
-                DetalleCitaId = d.DetalleCitaId,
-                DiagnosticoId = d.DiagnosticoId,
-                Principal = d.Principal
-            })
-            .FirstOrDefaultAsync();
-
-        if (detalle is null)
-            return NotFound();
-
-        return Ok(detalle);
+        var entity = await _useCase.GetByIdAsync(id);
+        return entity is null ? NotFound() : Ok(entity);
     }
 
-    // POST: api/DetallesDiagnostico
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateDetalleDiagnosticoDto request)
     {
-        var detalleCitaExiste = await _context.DetallesCita.AnyAsync(dc => dc.Id == request.DetalleCitaId);
-        if (!detalleCitaExiste)
-            return BadRequest("El detalle de cita especificado no existe.");
-
-        var diagnosticoExiste = await _context.Diagnosticos.AnyAsync(d => d.Id == request.DiagnosticoId && d.Activo);
-        if (!diagnosticoExiste)
-            return BadRequest("El diagnóstico especificado no existe o se encuentra inactivo.");
-
-        var yaAsignado = await _context.DetallesDiagnostico.AnyAsync(d => 
-            d.DetalleCitaId == request.DetalleCitaId && 
-            d.DiagnosticoId == request.DiagnosticoId);
-        if (yaAsignado)
-            return BadRequest("Este diagnóstico ya se encuentra asignado a este detalle de cita.");
-
-        // Si se marca como principal, desmarcar los demás diagnósticos del detalle de cita
-        if (request.Principal)
+        try
         {
-            var otrosPrincipales = await _context.DetallesDiagnostico
-                .Where(d => d.DetalleCitaId == request.DetalleCitaId && d.Principal)
-                .ToListAsync();
-
-            foreach (var item in otrosPrincipales)
-            {
-                item.Update(item.DetalleCitaId, item.DiagnosticoId, false);
-            }
+            var entity = await _useCase.CreateAsync(request);
+            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, request);
         }
-
-        var nuevoDetalle = new DetalleDiagnosticoEntity(
-            detalleCitaId: request.DetalleCitaId,
-            diagnosticoId: request.DiagnosticoId,
-            principal: request.Principal
-        );
-
-        _context.DetallesDiagnostico.Add(nuevoDetalle);
-        await _context.SaveChangesAsync();
-
-        var detalleDto = new CreateDetalleDiagnosticoDto
-        {
-            DetalleCitaId = nuevoDetalle.DetalleCitaId,
-            DiagnosticoId = nuevoDetalle.DiagnosticoId,
-            Principal = nuevoDetalle.Principal
-        };
-
-        return CreatedAtAction(nameof(GetById), new { id = nuevoDetalle.Id }, detalleDto);
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
-    // PUT: api/DetallesDiagnostico/{id}
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateDetalleDiagnosticoDto request)
     {
-        var detalle = await _context.DetallesDiagnostico.FindAsync(id);
-        if (detalle is null)
-            return NotFound();
-
-        var detalleCitaExiste = await _context.DetallesCita.AnyAsync(dc => dc.Id == request.DetalleCitaId);
-        if (!detalleCitaExiste)
-            return BadRequest("El detalle de cita especificado no existe.");
-
-        var diagnosticoExiste = await _context.Diagnosticos.AnyAsync(d => d.Id == request.DiagnosticoId && d.Activo);
-        if (!diagnosticoExiste)
-            return BadRequest("El diagnóstico especificado no existe o se encuentra inactivo.");
-
-        var yaAsignado = await _context.DetallesDiagnostico.AnyAsync(d => 
-            d.DetalleCitaId == request.DetalleCitaId && 
-            d.DiagnosticoId == request.DiagnosticoId && 
-            d.Id != id);
-        if (yaAsignado)
-            return BadRequest("Este diagnóstico ya está asignado en otro registro para este detalle de cita.");
-
-        // Si se marca como principal, desmarcar los demás diagnósticos del detalle de cita
-        if (request.Principal)
+        try
         {
-            var otrosPrincipales = await _context.DetallesDiagnostico
-                .Where(d => d.DetalleCitaId == request.DetalleCitaId && d.Principal && d.Id != id)
-                .ToListAsync();
-
-            foreach (var item in otrosPrincipales)
-            {
-                item.Update(item.DetalleCitaId, item.DiagnosticoId, false);
-            }
+            await _useCase.UpdateAsync(id, request);
+            return NoContent();
         }
-
-        detalle.Update(
-            detalleCitaId: request.DetalleCitaId,
-            diagnosticoId: request.DiagnosticoId,
-            principal: request.Principal
-        );
-
-        await _context.SaveChangesAsync();
-        return NoContent();
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var detalle = await _context.DetallesDiagnostico.FindAsync(id);
-        if (detalle is null)
-            return NotFound();
-
-        _context.DetallesDiagnostico.Remove(detalle);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        try
+        {
+            await _useCase.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 }

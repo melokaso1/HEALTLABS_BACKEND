@@ -1,13 +1,9 @@
 ﻿using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Domain.Interfaces
 {
-    public interface IPersonaDireccionRepository<PersonaDireccionEntity>
+    public interface IPersonaDireccionRepository : IGenericRepository<PersonaDireccionEntity>
     {
-        Task<IEnumerable<PersonaDireccionEntity>> GetEntityByPersonIdAsync(Guid PacienteId);
+        Task<IEnumerable<PersonaDireccionEntity>> GetEntityByPersonIdAsync(Guid personaId);
     }
 }
-

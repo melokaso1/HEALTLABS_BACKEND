@@ -1,10 +1,8 @@
 using Api.Security;
 using Application.DTOs.Sexo;
-using Domain.Entities;
-using Infrastructure.Persistence.Context;
+using Application.UseCases.Sexo;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers;
 
@@ -13,101 +11,52 @@ namespace Api.Controllers;
 [Authorize(Roles = AppRoles.Admin)]
 public sealed class SexosController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly SexoCrudUseCase _useCase;
 
-    public SexosController(AppDbContext context)
-    {
-        _context = context;
-    }
+    public SexosController(SexoCrudUseCase useCase) => _useCase = useCase;
 
     [HttpGet]
-    [AllowAnonymous]
-    public async Task<IActionResult> GetAll()
-    {
-        var sexos = await _context.Sexos
-            .Select(s => new CreateSexoDto
-            {
-                Codigo = s.Codigo,
-                Nombre = s.Nombre
-            })
-            .ToListAsync();
-
-        return Ok(sexos);
-    }
+    public async Task<IActionResult> GetAll() => Ok(await _useCase.GetAllAsync());
 
     [HttpGet("{id:guid}")]
-    [AllowAnonymous]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var sexo = await _context.Sexos
-            .Where(s => s.Id == id)
-            .Select(s => new CreateSexoDto
-            {
-                Codigo = s.Codigo,
-                Nombre = s.Nombre
-            })
-            .FirstOrDefaultAsync();
-
-        if (sexo is null)
-            return NotFound();
-
-        return Ok(sexo);
+        var entity = await _useCase.GetByIdAsync(id);
+        return entity is null ? NotFound() : Ok(entity);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateSexoDto request)
     {
-        var codigoExiste = await _context.Sexos.AnyAsync(s => s.Codigo == request.Codigo);
-        if (codigoExiste)
-            return BadRequest("El código de sexo especificado ya se encuentra registrado.");
-
-        var nuevoSexo = new SexoEntity(
-            codigo: request.Codigo,
-            nombre: request.Nombre
-        );
-
-        _context.Sexos.Add(nuevoSexo);
-        await _context.SaveChangesAsync();
-
-        var sexoDto = new CreateSexoDto
+        try
         {
-            Codigo = nuevoSexo.Codigo,
-            Nombre = nuevoSexo.Nombre
-        };
-
-        return CreatedAtAction(nameof(GetById), new { id = nuevoSexo.Id }, sexoDto);
+            var entity = await _useCase.CreateAsync(request);
+            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, request);
+        }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateSexoDto request)
     {
-        var sexo = await _context.Sexos.FindAsync(id);
-        if (sexo is null)
-            return NotFound();
-
-        var codigoEnUso = await _context.Sexos.AnyAsync(s => s.Codigo == request.Codigo && s.Id != id);
-        if (codigoEnUso)
-            return BadRequest("El código de sexo especificado ya se encuentra en uso por otro registro.");
-
-        sexo.Update(
-            codigo: request.Codigo,
-            nombre: request.Nombre
-        );
-
-        await _context.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _useCase.UpdateAsync(id, request);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var sexo = await _context.Sexos.FindAsync(id);
-        if (sexo is null)
-            return NotFound();
-
-        _context.Sexos.Remove(sexo);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        try
+        {
+            await _useCase.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 }

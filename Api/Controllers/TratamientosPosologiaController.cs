@@ -1,10 +1,8 @@
 using Api.Security;
 using Application.DTOs.TratamientoPosologia;
-using Domain.Entities;
-using Infrastructure.Persistence.Context;
+using Application.UseCases.TratamientoPosologia;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers;
 
@@ -13,142 +11,59 @@ namespace Api.Controllers;
 [Authorize(Roles = AppRoles.Admin)]
 public sealed class TratamientosPosologiaController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly TratamientoPosologiaCrudUseCase _useCase;
 
-    public TratamientosPosologiaController(AppDbContext context)
-    {
-        _context = context;
-    }
+    public TratamientosPosologiaController(TratamientoPosologiaCrudUseCase useCase) => _useCase = useCase;
 
     [HttpGet]
     [Authorize(Roles = AppRoles.Todos)]
-    public async Task<IActionResult> GetAll()
-    {
-        var posologias = await _context.TratamientosPosologia
-            .Include(tp => tp.Tratamiento)
-            .Select(tp => new CreateTratamientoPosologiaDto
-            {
-                TratamientoId = tp.TratamientoId,
-                Dosis = tp.Dosis,
-                Frecuencia = tp.Frecuencia,
-                DuracionDias = tp.DuracionDias,
-                Indicaciones = tp.Indicaciones
-            })
-            .ToListAsync();
-
-        return Ok(posologias);
-    }
+    public async Task<IActionResult> GetAll() => Ok(await _useCase.GetAllAsync());
 
     [HttpGet("tratamiento/{tratamientoId:guid}")]
     [Authorize(Roles = AppRoles.Todos)]
-    public async Task<IActionResult> GetByTratamiento(Guid tratamientoId)
-    {
-        var posologias = await _context.TratamientosPosologia
-            .Where(tp => tp.TratamientoId == tratamientoId)
-            .Select(tp => new CreateTratamientoPosologiaDto
-            {
-                TratamientoId = tp.TratamientoId,
-                Dosis = tp.Dosis,
-                Frecuencia = tp.Frecuencia,
-                DuracionDias = tp.DuracionDias,
-                Indicaciones = tp.Indicaciones
-            })
-            .ToListAsync();
-
-        return Ok(posologias);
-    }
+    public async Task<IActionResult> GetByTratamientoId(Guid tratamientoId) =>
+        Ok(await _useCase.FindAsync(entity => entity.TratamientoId == tratamientoId));
 
     [HttpGet("{id:guid}")]
     [Authorize(Roles = AppRoles.Todos)]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var posologia = await _context.TratamientosPosologia
-            .Where(tp => tp.Id == id)
-            .Select(tp => new CreateTratamientoPosologiaDto
-            {
-                TratamientoId = tp.TratamientoId,
-                Dosis = tp.Dosis,
-                Frecuencia = tp.Frecuencia,
-                DuracionDias = tp.DuracionDias,
-                Indicaciones = tp.Indicaciones
-            })
-            .FirstOrDefaultAsync();
-
-        if (posologia is null)
-            return NotFound();
-
-        return Ok(posologia);
+        var entity = await _useCase.GetByIdAsync(id);
+        return entity is null ? NotFound() : Ok(entity);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTratamientoPosologiaDto request)
     {
-        var tratamientoExiste = await _context.Tratamientos.AnyAsync(t => t.Id == request.TratamientoId);
-        if (!tratamientoExiste)
-            return BadRequest("El tratamiento especificado no existe.");
-
-        if (request.DuracionDias.HasValue && request.DuracionDias.Value <= 0)
-            return BadRequest("La duración en días debe ser mayor a 0.");
-
-        var nuevaPosologia = new TratamientoPosologiaEntity(
-            tratamientoId: request.TratamientoId,
-            dosis: request.Dosis,
-            frecuencia: request.Frecuencia,
-            duracionDias: request.DuracionDias,
-            indicaciones: request.Indicaciones
-        );
-
-        _context.TratamientosPosologia.Add(nuevaPosologia);
-        await _context.SaveChangesAsync();
-
-        var posologiaDto = new CreateTratamientoPosologiaDto
+        try
         {
-            TratamientoId = nuevaPosologia.TratamientoId,
-            Dosis = nuevaPosologia.Dosis,
-            Frecuencia = nuevaPosologia.Frecuencia,
-            DuracionDias = nuevaPosologia.DuracionDias,
-            Indicaciones = nuevaPosologia.Indicaciones
-        };
-
-        return CreatedAtAction(nameof(GetById), new { id = nuevaPosologia.Id }, posologiaDto);
+            var entity = await _useCase.CreateAsync(request);
+            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, request);
+        }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTratamientoPosologiaDto request)
     {
-        var posologia = await _context.TratamientosPosologia.FindAsync(id);
-        if (posologia is null)
-            return NotFound();
-
-        var tratamientoExiste = await _context.Tratamientos.AnyAsync(t => t.Id == request.TratamientoId);
-        if (!tratamientoExiste)
-            return BadRequest("El tratamiento especificado no existe.");
-
-        if (request.DuracionDias.HasValue && request.DuracionDias.Value <= 0)
-            return BadRequest("La duración en días debe ser mayor a 0.");
-
-        posologia.Update(
-            tratamientoId: request.TratamientoId,
-            dosis: request.Dosis,
-            frecuencia: request.Frecuencia,
-            duracionDias: request.DuracionDias,
-            indicaciones: request.Indicaciones
-        );
-
-        await _context.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _useCase.UpdateAsync(id, request);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var posologia = await _context.TratamientosPosologia.FindAsync(id);
-        if (posologia is null)
-            return NotFound();
-
-        _context.TratamientosPosologia.Remove(posologia);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        try
+        {
+            await _useCase.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 }

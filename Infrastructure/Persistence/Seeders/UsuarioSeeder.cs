@@ -1,10 +1,12 @@
 using Domain.Entities;
+using Domain.Interfaces;
+using Domain.ValueObjects;
 using Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence.Seeders;
 
-public class UsuarioSeeder(AppDbContext context)
+public class UsuarioSeeder(AppDbContext context, IPasswordHasher passwordHasher)
 {
     public async Task SeedAsync()
     {
@@ -15,9 +17,9 @@ public class UsuarioSeeder(AppDbContext context)
 
         if (!empleados.Any() || !roles.Any()) return;
 
-        var rolAdmin = roles.FirstOrDefault(r => r.NombreRol == "Administrador");
-        var rolMedico = roles.FirstOrDefault(r => r.NombreRol == "Médico");
-        var rolRecep = roles.FirstOrDefault(r => r.NombreRol == "Recepcionista");
+        var rolAdmin = roles.FirstOrDefault(r => r.NombreRol == RolValueObject.Administrador);
+        var rolProfesional = roles.FirstOrDefault(r => r.NombreRol == RolValueObject.Profesional);
+        var rolRecep = roles.FirstOrDefault(r => r.NombreRol == RolValueObject.Recepcionista);
 
         var empAdmin = empleados.FirstOrDefault(e => e.Persona?.NumeroDocumento == "1000000001");
         var empMedico = empleados.FirstOrDefault(e => e.Persona?.NumeroDocumento == "1000000002");
@@ -32,7 +34,7 @@ public class UsuarioSeeder(AppDbContext context)
                 rolAdmin.Id,
                 "admin",
                 "admin@healtlabs.com",
-                "Admin123!",
+                passwordHasher.Hash("Admin123!"),
                 true,
                 null,
                 0,
@@ -43,14 +45,14 @@ public class UsuarioSeeder(AppDbContext context)
             ));
         }
 
-        if (empMedico != null && rolMedico != null)
+        if (empMedico != null && rolProfesional != null)
         {
             usuarios.Add(new UsuarioEntity(
                 empMedico.Id,
-                rolMedico.Id,
+                rolProfesional.Id,
                 "medico1",
                 "medico@healtlabs.com",
-                "Medico123!",
+                passwordHasher.Hash("Medico123!"),
                 true,
                 null,
                 0,
@@ -68,7 +70,7 @@ public class UsuarioSeeder(AppDbContext context)
                 rolRecep.Id,
                 "recepcion",
                 "recepcion@healtlabs.com",
-                "Recepcion123!",
+                passwordHasher.Hash("Recepcion123!"),
                 true,
                 null,
                 0,

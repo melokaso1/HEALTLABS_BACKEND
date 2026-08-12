@@ -8,6 +8,8 @@ public class LoginResponseDto
     public string Email { get; set; } = null!;
     public string RolNombre { get; set; } = null!;
     public bool DebeCambiarPassword { get; set; }
-    public DateTime SesionExpiresAt { get; set; }
-    public string SessionToken { get; set; } = null!;
+    public DateTime AccessExpiresAt { get; set; }
+    public DateTime RefreshExpiresAt { get; set; }
+    public string AccessToken { get; set; } = null!;
+    public string RefreshToken { get; set; } = null!;
 }

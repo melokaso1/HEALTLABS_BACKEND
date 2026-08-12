@@ -1,31 +1,70 @@
-using Infrastructure.Persistence.Context;
-using Infrastructure.Persistence.Seeders;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Text;
-using Domain.Interfaces;
-using Infrastructure.Auth;
+using Application;
+using DotNetEnv;
+using Infrastructure;
+using Infrastructure.Persistence.Context;
+using Infrastructure.Persistence.Seeders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+LoadEnvFile(builder.Environment.ContentRootPath);
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Configuration.AddEnvironmentVariables();
 
-var jwtKey = builder.Configuration["JWT:Key"]
-    ?? throw new InvalidOperationException("JWT:Key no esta¡ configurada.");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+    throw new InvalidOperationException("ConnectionStrings:DefaultConnection (o ConnectionStrings__DefaultConnection) es obligatoria.");
+
+var jwtKey = builder.Configuration["JWT:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+    throw new InvalidOperationException("JWT:Key (o JWT__Key) es obligatoria.");
+
 var jwtIssuer = builder.Configuration["JWT:Issuer"]
-    ?? throw new InvalidOperationException("JWT:Issuer no esta¡ configurado.");
+    ?? throw new InvalidOperationException("JWT:Issuer no está configurado.");
 var jwtAudience = builder.Configuration["JWT:Audience"]
-    ?? throw new InvalidOperationException("JWT:Audience no esta¡ configurado.");
+    ?? throw new InvalidOperationException("JWT:Audience no está configurado.");
 
-builder.Services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "HealtLab API",
+        Version = "v1"
+    });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Ingrese el token JWT: Bearer {token}"
+    });
+
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+    });
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+        policy.AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowAnyOrigin());
+});
+
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -48,12 +87,8 @@ builder.Services
         };
     });
 
-// Registrar Seeders con Inyección de Dependencias////
-builder.Services.AddPersistenceSeeders();
-
 var app = builder.Build();
 
-// Ejecutar migraciones y seeders al arrancar la aplicación////
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -72,17 +107,31 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
+
+static void LoadEnvFile(string contentRoot)
+{
+    var dir = new DirectoryInfo(contentRoot);
+    while (dir != null)
+    {
+        var candidate = Path.Combine(dir.FullName, ".env");
+        if (File.Exists(candidate))
+        {
+            Env.Load(candidate);
+            return;
+        }
+
+        dir = dir.Parent;
+    }
+}

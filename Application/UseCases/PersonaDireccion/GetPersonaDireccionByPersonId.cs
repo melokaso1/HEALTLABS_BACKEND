@@ -5,18 +5,16 @@ namespace Application.UseCases.PersonaDireccion
 {
     public class GetPersonaDireccionByPersonId
     {
-        private readonly IPersonaDireccionRepository<PersonaDireccionEntity> _repo;
+        private readonly IPersonaDireccionRepository _repo;
 
-        public GetPersonaDireccionByPersonId(IPersonaDireccionRepository<PersonaDireccionEntity> repo)
+        public GetPersonaDireccionByPersonId(IPersonaDireccionRepository repo)
         {
             _repo = repo;
         }
 
-        public async Task<IEnumerable<PersonaDireccionEntity>> ExecuteAsync(Guid PersonId)
+        public async Task<IEnumerable<PersonaDireccionEntity>> ExecuteAsync(Guid personId)
         {
-            var entity = await _repo.GetEntityByPersonIdAsync(PersonId);
-
-            return entity;
+            return await _repo.GetEntityByPersonIdAsync(personId);
         }
     }
 }
