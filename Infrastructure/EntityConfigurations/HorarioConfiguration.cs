@@ -20,7 +20,7 @@ public class HorarioConfiguration : IEntityTypeConfiguration<HorarioEntity>
         builder.Property(x => x.SalidaAlmuerzo).IsRequired();
         builder.Property(x => x.RetornoActividades).IsRequired();
 
-        builder.HasIndex(x => x.MedicoId).IsUnique();
+        builder.HasIndex(x => new { x.MedicoId }).IsUnique();
 
         builder.HasOne(x => x.Medico)
             .WithMany(m => m.Horarios)

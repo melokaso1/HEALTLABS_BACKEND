@@ -19,11 +19,12 @@ namespace Application.UseCases.Horarios
                 throw new InvalidOperationException("El médico ya tiene una jornada configurada.");
 
             var horario = new HorarioEntity(
-                dto.MedicoId,
-                dto.HoraEntrada,
-                dto.HoraSalida,
-                dto.SalidaAlmuerzo,
-                dto.RetornoActividades);
+                                        dto.MedicoId,
+                                        dto.HoraEntrada,
+                                        dto.HoraSalida,
+                                        dto.SalidaAlmuerzo,
+                                        dto.RetornoActividades
+                                        );
 
             return await _repo.AddAsync(horario);
         }

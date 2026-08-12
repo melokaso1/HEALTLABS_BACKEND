@@ -18,8 +18,15 @@ namespace Application.UseCases.Horarios
             var horario = await _repo.GetEntityByIdAsync(id)
                 ?? throw new KeyNotFoundException("No Existe");
 
-            if (await _repo.AnyAsync(h => h.MedicoId == dto.MedicoId && h.Id != id))
-                throw new InvalidOperationException("El médico ya tiene una jornada configurada.");
+            if (horario == null)
+            {
+                throw new ArgumentException("No Existe");
+            }
+
+            horario.HoraEntrada = dto.HoraEntrada;
+            horario.HoraSalida = dto.HoraSalida;
+            horario.SalidaAlmuerzo = dto.SalidaAlmuerzo;
+            horario.RetornoActividades = dto.RetornoActividades;
 
             horario.Update(
                 dto.MedicoId,

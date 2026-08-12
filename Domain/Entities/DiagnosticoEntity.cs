@@ -19,7 +19,6 @@ namespace Domain.Entities
 
         public void Update(string codigoCie10, string descripcion, bool activo)
         {
-            CodigoCie10 = codigoCie10;
             Descripcion = descripcion;
             Activo = activo;
         }

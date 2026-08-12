@@ -29,12 +29,10 @@ namespace Domain.Entities
         }
 
         public void Update(
-            Guid pacienteId,
             string tipo,
             string descripcion,
             Guid? usuarioRegistroId)
         {
-            PacienteId = pacienteId;
             Tipo = tipo;
             Descripcion = descripcion;
             UsuarioRegistroId = usuarioRegistroId;

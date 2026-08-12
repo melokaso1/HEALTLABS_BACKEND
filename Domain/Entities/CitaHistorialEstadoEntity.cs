@@ -32,19 +32,5 @@ namespace Domain.Entities
             FechaCambio = DateTime.UtcNow;
             Observacion = observacion;
         }
-
-        public void Update(
-            Guid citaId,
-            Guid estadoAnteriorId,
-            Guid estadoNuevoId,
-            Guid? usuarioId,
-            string? observacion)
-        {
-            CitaId = citaId;
-            EstadoAnteriorId = estadoAnteriorId;
-            EstadoNuevoId = estadoNuevoId;
-            UsuarioId = usuarioId;
-            Observacion = observacion;
-        }
     }
 }

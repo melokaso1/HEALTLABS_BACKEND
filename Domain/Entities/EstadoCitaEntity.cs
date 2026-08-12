@@ -17,7 +17,6 @@ namespace Domain.Entities
 
         public void Update(string codigo, string? descripcion)
         {
-            Codigo = codigo;
             Descripcion = descripcion;
         }
     }

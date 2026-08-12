@@ -29,13 +29,11 @@ namespace Domain.Entities
         }
 
         public void Update(
-            Guid medicoId,
             TimeOnly horaEntrada,
             TimeOnly horaSalida,
             TimeOnly salidaAlmuerzo,
             TimeOnly retornoActividades)
         {
-            MedicoId = medicoId;
             HoraEntrada = horaEntrada;
             HoraSalida = horaSalida;
             SalidaAlmuerzo = salidaAlmuerzo;
