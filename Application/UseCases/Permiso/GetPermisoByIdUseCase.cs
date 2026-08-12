@@ -14,7 +14,8 @@ namespace Application.UseCases.Permiso
 
         public async Task<PermisoEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("El permiso no existe.");
             return entity;
         }
     }

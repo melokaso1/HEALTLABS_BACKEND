@@ -7,7 +7,16 @@ public sealed class GetCitaByIdUseCase
 {
     private readonly IGenericRepository<CitaEntity> _repo;
 
-    public GetCitaByIdUseCase(IGenericRepository<CitaEntity> repo) => _repo = repo;
+    public GetCitaByIdUseCase(IGenericRepository<CitaEntity> repo)
+    {
+        _repo = repo;
+    }
 
-    public Task<CitaEntity?> ExecuteAsync(Guid id) => _repo.GetEntityByIdAsync(id);
+    public async Task<CitaEntity> ExecuteAsync(Guid id)
+    {
+        var entity = await _repo.GetEntityByIdAsync(id)
+            ?? throw new KeyNotFoundException("La cita no existe.");
+
+        return entity;
+    }
 }

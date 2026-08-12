@@ -14,8 +14,8 @@ namespace Application.UseCases.Especialidad
 
         public async Task<EspecialidadEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
-
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("La especialidad no existe.");
             return entity;
         }
     }

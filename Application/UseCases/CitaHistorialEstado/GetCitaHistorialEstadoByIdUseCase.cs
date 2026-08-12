@@ -14,7 +14,8 @@ namespace Application.UseCases.CitaHistorialEstado
 
         public async Task<CitaHistorialEstadoEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("El historial de estado de la cita no existe.");
             return entity;
         }
     }

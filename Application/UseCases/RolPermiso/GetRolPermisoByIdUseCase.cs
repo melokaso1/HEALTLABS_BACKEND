@@ -14,7 +14,8 @@ namespace Application.UseCases.RolPermiso
 
         public async Task<RolPermisoEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("El permiso del rol no existe.");
             return entity;
         }
     }

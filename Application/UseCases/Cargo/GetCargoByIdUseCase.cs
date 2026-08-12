@@ -14,7 +14,8 @@ namespace Application.UseCases.Cargo
 
         public async Task<CargoEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("El cargo no existe.");
             return entity;
         }
     }

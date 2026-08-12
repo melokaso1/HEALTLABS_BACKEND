@@ -14,8 +14,8 @@ namespace Application.UseCases.EstadoCita
 
         public async Task<EstadoCitaEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
-
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("El estado de la cita no existe.");
             return entity;
         }
     }

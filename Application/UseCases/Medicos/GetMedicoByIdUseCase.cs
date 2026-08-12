@@ -14,8 +14,8 @@ namespace Application.UseCases.Medicos
 
         public async Task<MedicoEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
-
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("El médico no existe.");
             return entity;
         }
     }

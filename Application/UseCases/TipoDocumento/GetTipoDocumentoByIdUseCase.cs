@@ -14,8 +14,8 @@ namespace Application.UseCases.TipoDocumento
 
         public async Task<TipoDocumentoEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
-
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("El tipo de documento no existe.");
             return entity;
         }
     }

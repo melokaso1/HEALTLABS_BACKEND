@@ -14,7 +14,8 @@ namespace Application.UseCases.PersonaTelefono
 
         public async Task<PersonaTelefonoEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("El teléfono de la persona no existe.");
             return entity;
         }
     }

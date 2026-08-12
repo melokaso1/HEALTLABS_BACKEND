@@ -14,8 +14,8 @@ namespace Application.UseCases.Tratamiento
 
         public async Task<TratamientoEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
-
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("El tratamiento no existe.");
             return entity;
         }
     }

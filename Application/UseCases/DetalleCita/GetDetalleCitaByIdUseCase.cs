@@ -14,7 +14,8 @@ namespace Application.UseCases.DetalleCita
 
         public async Task<DetalleCitaEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
+            var entity = await _repo.GetEntityByIdAsync(id)
+            ?? throw new KeyNotFoundException("El detalle de la cita no existe.");
             return entity;
         }
     }

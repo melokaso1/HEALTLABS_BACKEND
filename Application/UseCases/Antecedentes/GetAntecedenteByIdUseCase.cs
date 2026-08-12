@@ -14,8 +14,8 @@ namespace Application.UseCases.Antecedentes
 
         public async Task<AntecedenteEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
-
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("El antecedente no existe.");
             return entity;
         }
     }

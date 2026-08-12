@@ -17,8 +17,8 @@ namespace Application.UseCases.Diagnostico
 
         public async Task<DiagnosticoEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
-
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("El diagnóstico no existe.");
             return entity;
         }
     }

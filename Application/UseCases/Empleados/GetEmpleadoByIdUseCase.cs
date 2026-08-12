@@ -14,8 +14,8 @@ namespace Application.UseCases.Empleados
 
         public async Task<EmpleadoEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
-
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("El empleado no existe.");
             return entity;
         }
     }

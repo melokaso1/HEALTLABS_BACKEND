@@ -14,8 +14,8 @@ namespace Application.UseCases.Personas
 
         public async Task<PersonaEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
-
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("La persona no existe.");
             return entity;
         }
     }

@@ -14,8 +14,8 @@ namespace Application.UseCases.PacienteAlergia
 
         public async Task<PacienteAlergiaEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
-
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("El detalle de la cita no existe.");
             return entity;
         }
     }

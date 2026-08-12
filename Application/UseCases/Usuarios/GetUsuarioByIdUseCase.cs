@@ -14,8 +14,8 @@ namespace Application.UseCases.Usuarios
 
         public async Task<UsuarioEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
-
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("El usuario no existe.");
             return entity;
         }
     }

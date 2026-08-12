@@ -14,8 +14,8 @@ namespace Application.UseCases.PersonaDireccion
 
         public async Task<PersonaDireccionEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
-
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("La dirección de la persona no existe.");
             return entity;
         }
     }

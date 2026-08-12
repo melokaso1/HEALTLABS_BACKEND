@@ -14,7 +14,8 @@ namespace Application.UseCases.TipoCita
 
         public async Task<TipoCitaEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("El tipo de cita no existe.");
             return entity;
         }
     }

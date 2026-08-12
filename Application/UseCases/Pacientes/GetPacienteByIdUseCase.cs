@@ -14,8 +14,8 @@ namespace Application.UseCases.Pacientes
 
         public async Task<PacienteEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
-
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("El paciente no existe.");
             return entity;
         }
     }

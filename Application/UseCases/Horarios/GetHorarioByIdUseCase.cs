@@ -15,8 +15,8 @@ namespace Application.UseCases.Horarios
 
         public async Task<HorarioEntity> ExecuteAsync(Guid id)
         {
-            var entity = await _repo.GetEntityByIdAsync(id);
-
+            var entity = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("El horario no existe.");
             return entity;
         }
     }
