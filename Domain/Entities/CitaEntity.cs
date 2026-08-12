@@ -54,35 +54,26 @@ namespace Domain.Entities
             UsuarioCreacionId = usuarioCreacionId;
             FechaCreacion = DateTime.UtcNow;
         }
-
-        public void Update(
-            Guid pacienteId,
-            Guid medicoId,
-            Guid estadoCitaId,
-            Guid tipoCitaId,
+        public void Reprogramar(
             DateOnly fecha,
             TimeOnly horaInicio,
             TimeOnly horaFin,
-            string motivoConsulta,
-            string? observaciones,
-            Guid usuarioCreacionId,
-            string? motivoCancelacion,
-            Guid? usuarioCancelacionId,
-            DateTime? fechaCancelacion)
+            string observaciones)
         {
-            PacienteId = pacienteId;
-            MedicoId = medicoId;
-            EstadoCitaId = estadoCitaId;
-            TipoCitaId = tipoCitaId;
             Fecha = fecha;
             HoraInicio = horaInicio;
             HoraFin = horaFin;
-            MotivoConsulta = motivoConsulta;
             Observaciones = observaciones;
-            UsuarioCreacionId = usuarioCreacionId;
-            MotivoCancelacion = motivoCancelacion;
-            UsuarioCancelacionId = usuarioCancelacionId;
-            FechaCancelacion = fechaCancelacion;
+        }
+        public void Cancelar(
+            Guid estadoCanceladaId,
+            string motivo,
+            Guid usuarioId)
+        {
+            EstadoCitaId = estadoCanceladaId;
+            MotivoCancelacion = motivo;
+            UsuarioCancelacionId = usuarioId;
+            FechaCancelacion = DateTime.UtcNow;
         }
     }
 }

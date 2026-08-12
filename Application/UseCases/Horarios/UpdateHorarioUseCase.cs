@@ -23,8 +23,6 @@ namespace Application.UseCases.Horarios
                 throw new ArgumentException("No Existe");
             }
 
-            horario.MedicoId = dto.MedicoId;
-            horario.Fecha = dto.Fecha;
             horario.HoraEntrada = dto.HoraEntrada;
             horario.HoraSalida = dto.HoraSalida;
             horario.SalidaAlmuerzo = dto.SalidaAlmuerzo;

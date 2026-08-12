@@ -29,17 +29,5 @@ namespace Domain.Entities
             ResumenConsulta = resumenConsulta;
             FechaRegistro = DateTime.UtcNow;
         }
-
-        public void Update(
-            Guid citaId,
-            Guid medicoId,
-            string? notaAtencion,
-            string? resumenConsulta)
-        {
-            CitaId = citaId;
-            MedicoId = medicoId;
-            NotaAtencion = notaAtencion;
-            ResumenConsulta = resumenConsulta;
-        }
     }
 }

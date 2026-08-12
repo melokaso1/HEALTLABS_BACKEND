@@ -19,7 +19,6 @@ namespace Application.UseCases.Horarios
         {
             var horario = new HorarioEntity(
                                         dto.MedicoId,
-                                        dto.Fecha,
                                         dto.HoraEntrada,
                                         dto.HoraSalida,
                                         dto.SalidaAlmuerzo,

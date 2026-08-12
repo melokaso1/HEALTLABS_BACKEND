@@ -6,5 +6,4 @@ public class ReprogramarCitaDto
     public TimeOnly HoraInicio { get; set; }
     public TimeOnly HoraFin { get; set; }
     public string? Observaciones { get; set; }
-    public Guid? UsuarioId { get; set; }
 }

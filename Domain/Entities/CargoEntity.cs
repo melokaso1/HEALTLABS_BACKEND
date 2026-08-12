@@ -21,7 +21,6 @@ namespace Domain.Entities
 
         public void Update(string? codigo, string nombre, string? descripcion, int? nivelJerarquico)
         {
-            Codigo = codigo;
             Nombre = nombre;
             Descripcion = descripcion;
             NivelJerarquico = nivelJerarquico;

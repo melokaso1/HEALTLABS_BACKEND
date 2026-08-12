@@ -32,13 +32,11 @@ namespace Domain.Entities
         }
 
         public void Update(
-            Guid personaId,
             Guid cargoId,
             DateOnly fechaIngreso,
             DateOnly? fechaRetiro,
             bool activo)
         {
-            PersonaId = personaId;
             CargoId = cargoId;
             FechaIngreso = fechaIngreso;
             FechaRetiro = fechaRetiro;

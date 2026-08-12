@@ -4,7 +4,6 @@ namespace Application.DTOs.Cita
     {
         public Guid PacienteId { get; set; }
         public Guid MedicoId { get; set; }
-        public Guid EstadoCitaId { get; set; }
         public Guid TipoCitaId { get; set; }
         public DateOnly Fecha { get; set; }
         public TimeOnly HoraInicio { get; set; }

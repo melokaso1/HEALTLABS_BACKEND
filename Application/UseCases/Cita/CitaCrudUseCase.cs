@@ -39,14 +39,16 @@ public sealed class CitaCrudUseCase : EntityCrudUseCase<CitaEntity>
 
     public async Task<CitaEntity> CreateAsync(CreateCitaDto dto)
     {
-        await ValidateReferencesAsync(dto.PacienteId, dto.MedicoId, dto.EstadoCitaId, dto.TipoCitaId, dto.UsuarioCreacionId);
+        await ValidateReferencesAsync(dto.PacienteId, dto.MedicoId, dto.TipoCitaId, dto.UsuarioCreacionId);
         await EnsureWithinHorarioAsync(dto.MedicoId, dto.Fecha, dto.HoraInicio, dto.HoraFin);
         await EnsureNoOverlapAsync(dto.MedicoId, dto.Fecha, dto.HoraInicio, dto.HoraFin, excludeCitaId: null);
+
+        var agendada = await GetEstadoByCodigoAsync("AGENDADA");
 
         var cita = new CitaEntity(
             dto.PacienteId,
             dto.MedicoId,
-            dto.EstadoCitaId,
+            agendada.Id,
             dto.TipoCitaId,
             dto.Fecha,
             dto.HoraInicio,
@@ -67,44 +69,7 @@ public sealed class CitaCrudUseCase : EntityCrudUseCase<CitaEntity>
         return created;
     }
 
-    public async Task UpdateAsync(Guid id, UpdateCitaDto dto)
-    {
-        var cita = await _citas.GetEntityByIdAsync(id)
-            ?? throw new KeyNotFoundException("La cita no existe.");
-
-        await ValidateReferencesAsync(dto.PacienteId, dto.MedicoId, dto.EstadoCitaId, dto.TipoCitaId, cita.UsuarioCreacionId);
-        await EnsureWithinHorarioAsync(dto.MedicoId, dto.Fecha, dto.HoraInicio, dto.HoraFin);
-        await EnsureNoOverlapAsync(dto.MedicoId, dto.Fecha, dto.HoraInicio, dto.HoraFin, excludeCitaId: id);
-
-        var estadoAnterior = cita.EstadoCitaId;
-
-        cita.Update(
-            dto.PacienteId,
-            dto.MedicoId,
-            dto.EstadoCitaId,
-            dto.TipoCitaId,
-            dto.Fecha,
-            dto.HoraInicio,
-            dto.HoraFin,
-            dto.MotivoConsulta,
-            dto.Observaciones,
-            cita.UsuarioCreacionId,
-            dto.MotivoCancelacion ?? cita.MotivoCancelacion,
-            dto.UsuarioCancelacionId ?? cita.UsuarioCancelacionId,
-            dto.FechaCancelacion ?? cita.FechaCancelacion);
-
-        await _citas.UpdateAsync(cita);
-
-        if (estadoAnterior != dto.EstadoCitaId)
-        {
-            await _historial.AddAsync(new CitaHistorialEstadoEntity(
-                cita.Id,
-                estadoAnterior,
-                dto.EstadoCitaId,
-                dto.UsuarioCancelacionId ?? cita.UsuarioCreacionId,
-                "Cambio de estado"));
-        }
-    }
+    
 
     public async Task CancelAsync(Guid id, CancelCitaDto dto)
     {
@@ -116,20 +81,10 @@ public sealed class CitaCrudUseCase : EntityCrudUseCase<CitaEntity>
             throw new InvalidOperationException("La cita ya está cancelada.");
 
         var estadoAnterior = cita.EstadoCitaId;
-        cita.Update(
-            cita.PacienteId,
-            cita.MedicoId,
+        cita.Cancelar(
             cancelada.Id,
-            cita.TipoCitaId,
-            cita.Fecha,
-            cita.HoraInicio,
-            cita.HoraFin,
-            cita.MotivoConsulta,
-            cita.Observaciones,
-            cita.UsuarioCreacionId,
             dto.MotivoCancelacion,
-            dto.UsuarioCancelacionId,
-            DateTime.UtcNow);
+            dto.UsuarioCancelacionId);
 
         await _citas.UpdateAsync(cita);
         await _historial.AddAsync(new CitaHistorialEstadoEntity(
@@ -155,20 +110,11 @@ public sealed class CitaCrudUseCase : EntityCrudUseCase<CitaEntity>
         var estadoAnterior = cita.EstadoCitaId;
         var agendada = await GetEstadoByCodigoAsync("AGENDADA");
 
-        cita.Update(
-            cita.PacienteId,
-            cita.MedicoId,
-            agendada.Id,
-            cita.TipoCitaId,
+        cita.Reprogramar(
             dto.Fecha,
             dto.HoraInicio,
             dto.HoraFin,
-            cita.MotivoConsulta,
-            dto.Observaciones ?? cita.Observaciones,
-            cita.UsuarioCreacionId,
-            null,
-            null,
-            null);
+            dto.Observaciones);
 
         await _citas.UpdateAsync(cita);
 
@@ -204,7 +150,6 @@ public sealed class CitaCrudUseCase : EntityCrudUseCase<CitaEntity>
     private async Task ValidateReferencesAsync(
         Guid pacienteId,
         Guid medicoId,
-        Guid estadoId,
         Guid tipoId,
         Guid usuarioId)
     {
@@ -213,9 +158,6 @@ public sealed class CitaCrudUseCase : EntityCrudUseCase<CitaEntity>
 
         if (!await _medicos.AnyAsync(m => m.Id == medicoId && m.Activo))
             throw new InvalidOperationException("El médico no existe o se encuentra inactivo.");
-
-        if (!await _estados.AnyAsync(e => e.Id == estadoId))
-            throw new InvalidOperationException("El estado de cita especificado no existe.");
 
         if (!await _tipos.AnyAsync(t => t.Id == tipoId && t.Activo))
             throw new InvalidOperationException("El tipo de cita especificado no existe o está inactivo.");
