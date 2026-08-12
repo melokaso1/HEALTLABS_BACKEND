@@ -1,6 +1,4 @@
-﻿using Application.DTOs.Cita;
-using Application.DTOs.EstadoCita;
-using Application.DTOs.Horario;
+﻿using Application.DTOs.Horario;
 using Domain.Entities;
 using Domain.Interfaces;
 
@@ -17,14 +15,15 @@ namespace Application.UseCases.Horarios
 
         public async Task<HorarioEntity> ExecuteAsync(CreateHorarioDto dto)
         {
+            if (await _repo.AnyAsync(h => h.MedicoId == dto.MedicoId))
+                throw new InvalidOperationException("El médico ya tiene una jornada configurada.");
+
             var horario = new HorarioEntity(
-                                        dto.MedicoId,
-                                        dto.Fecha,
-                                        dto.HoraEntrada,
-                                        dto.HoraSalida,
-                                        dto.SalidaAlmuerzo,
-                                        dto.RetornoActividades
-                                        );
+                dto.MedicoId,
+                dto.HoraEntrada,
+                dto.HoraSalida,
+                dto.SalidaAlmuerzo,
+                dto.RetornoActividades);
 
             return await _repo.AddAsync(horario);
         }

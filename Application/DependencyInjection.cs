@@ -17,6 +17,8 @@ public static class DependencyInjection
         foreach (var type in useCaseTypes)
             services.AddScoped(type);
 
+        services.AddScoped<UseCases.Citas.CitaSchedulingRules>();
+
         return services;
     }
 }

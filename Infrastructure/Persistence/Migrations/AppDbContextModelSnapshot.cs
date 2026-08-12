@@ -17,7 +17,7 @@ namespace Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.10")
+                .HasAnnotation("ProductVersion", "10.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -403,9 +403,6 @@ namespace Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateOnly>("Fecha")
-                        .HasColumnType("date");
-
                     b.Property<TimeOnly>("HoraEntrada")
                         .HasColumnType("time without time zone");
 
@@ -423,7 +420,7 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicoId", "Fecha")
+                    b.HasIndex("MedicoId")
                         .IsUnique();
 
                     b.ToTable("horario", null, t =>

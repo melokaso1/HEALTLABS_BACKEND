@@ -1,6 +1,6 @@
 using Api.Security;
 using Application.DTOs.Horario;
-using Application.UseCases.Horario;
+using Application.UseCases.Horarios;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,24 +11,37 @@ namespace Api.Controllers;
 [Authorize(Roles = AppRoles.Admin)]
 public sealed class HorariosController : ControllerBase
 {
-    private readonly HorarioCrudUseCase _useCase;
+    private readonly GetAllHorarioUseCase _getAll;
+    private readonly GetHorarioByIdUseCase _getById;
+    private readonly GetHorariosByMedicoIdUseCase _getByMedicoId;
+    private readonly CreateHorarioUseCase _create;
+    private readonly UpdateHorarioUseCase _update;
+    private readonly DeleteHorarioUseCase _delete;
 
-    public HorariosController(HorarioCrudUseCase useCase) => _useCase = useCase;
+    public HorariosController(
+        GetAllHorarioUseCase getAll,
+        GetHorarioByIdUseCase getById,
+        GetHorariosByMedicoIdUseCase getByMedicoId,
+        CreateHorarioUseCase create,
+        UpdateHorarioUseCase update,
+        DeleteHorarioUseCase delete)
+        => (_getAll, _getById, _getByMedicoId, _create, _update, _delete)
+            = (getAll, getById, getByMedicoId, create, update, delete);
 
     [HttpGet]
     [Authorize(Roles = AppRoles.Todos)]
-    public async Task<IActionResult> GetAll() => Ok(await _useCase.GetAllAsync());
+    public async Task<IActionResult> GetAll() => Ok(await _getAll.ExecuteAsync());
 
     [HttpGet("medico/{medicoId:guid}")]
     [Authorize(Roles = AppRoles.Todos)]
     public async Task<IActionResult> GetByMedicoId(Guid medicoId) =>
-        Ok(await _useCase.FindAsync(entity => entity.MedicoId == medicoId));
+        Ok(await _getByMedicoId.ExecuteAsync(medicoId));
 
     [HttpGet("{id:guid}")]
     [Authorize(Roles = AppRoles.Todos)]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var entity = await _useCase.GetByIdAsync(id);
+        var entity = await _getById.ExecuteAsync(id);
         return entity is null ? NotFound() : Ok(entity);
     }
 
@@ -37,7 +50,7 @@ public sealed class HorariosController : ControllerBase
     {
         try
         {
-            var entity = await _useCase.CreateAsync(request);
+            var entity = await _create.ExecuteAsync(request);
             return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity);
         }
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
@@ -48,7 +61,7 @@ public sealed class HorariosController : ControllerBase
     {
         try
         {
-            await _useCase.UpdateAsync(id, request);
+            await _update.ExecuteAsync(id, request);
             return NoContent();
         }
         catch (KeyNotFoundException) { return NotFound(); }
@@ -60,10 +73,10 @@ public sealed class HorariosController : ControllerBase
     {
         try
         {
-            await _useCase.DeleteAsync(id);
+            if (await _getById.ExecuteAsync(id) is null) return NotFound();
+            await _delete.ExecuteAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException) { return NotFound(); }
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 }

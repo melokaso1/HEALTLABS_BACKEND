@@ -8,3 +8,4 @@ namespace Application.DTOs.Antecedente
         public Guid? UsuarioRegistroId { get; set; }
     }
 }
+

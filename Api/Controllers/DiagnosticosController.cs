@@ -11,19 +11,25 @@ namespace Api.Controllers;
 [Authorize(Roles = AppRoles.Admin)]
 public sealed class DiagnosticosController : ControllerBase
 {
-    private readonly DiagnosticoCrudUseCase _useCase;
+    private readonly GetAllDiagnosticosUseCase _getAll;
+    private readonly GetDiagnosticoByIdUseCase _getById;
+    private readonly CreateDiagnosticoUseCase _create;
+    private readonly UpdateDiagnosticoUseCase _update;
+    private readonly DeleteDiagnosticoUseCase _delete;
 
-    public DiagnosticosController(DiagnosticoCrudUseCase useCase) => _useCase = useCase;
+    public DiagnosticosController(GetAllDiagnosticosUseCase getAll, GetDiagnosticoByIdUseCase getById,
+        CreateDiagnosticoUseCase create, UpdateDiagnosticoUseCase update, DeleteDiagnosticoUseCase delete)
+        => (_getAll, _getById, _create, _update, _delete) = (getAll, getById, create, update, delete);
 
     [HttpGet]
     [Authorize(Roles = AppRoles.Todos)]
-    public async Task<IActionResult> GetAll() => Ok(await _useCase.GetAllAsync());
+    public async Task<IActionResult> GetAll() => Ok(await _getAll.ExecuteAsync());
 
     [HttpGet("{id:guid}")]
     [Authorize(Roles = AppRoles.Todos)]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var entity = await _useCase.GetByIdAsync(id);
+        var entity = await _getById.ExecuteAsync(id);
         return entity is null ? NotFound() : Ok(entity);
     }
 
@@ -32,7 +38,7 @@ public sealed class DiagnosticosController : ControllerBase
     {
         try
         {
-            var entity = await _useCase.CreateAsync(request);
+            var entity = await _create.ExecuteAsync(request);
             return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity);
         }
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
@@ -43,7 +49,7 @@ public sealed class DiagnosticosController : ControllerBase
     {
         try
         {
-            await _useCase.UpdateAsync(id, request);
+            await _update.ExecuteAsync(id, request);
             return NoContent();
         }
         catch (KeyNotFoundException) { return NotFound(); }
@@ -55,10 +61,10 @@ public sealed class DiagnosticosController : ControllerBase
     {
         try
         {
-            await _useCase.DeleteAsync(id);
+            if (await _getById.ExecuteAsync(id) is null) return NotFound();
+            await _delete.ExecuteAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException) { return NotFound(); }
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 }

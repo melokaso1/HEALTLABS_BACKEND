@@ -4,7 +4,6 @@ namespace Domain.Entities
     {
         public Guid Id { get; set; }
         public Guid MedicoId { get; set; }
-        public DateOnly Fecha { get; set; }
         public TimeOnly HoraEntrada { get; set; }
         public TimeOnly HoraSalida { get; set; }
         public TimeOnly SalidaAlmuerzo { get; set; }
@@ -16,7 +15,6 @@ namespace Domain.Entities
 
         public HorarioEntity(
             Guid medicoId,
-            DateOnly fecha,
             TimeOnly horaEntrada,
             TimeOnly horaSalida,
             TimeOnly salidaAlmuerzo,
@@ -24,7 +22,6 @@ namespace Domain.Entities
         {
             Id = Guid.NewGuid();
             MedicoId = medicoId;
-            Fecha = fecha;
             HoraEntrada = horaEntrada;
             HoraSalida = horaSalida;
             SalidaAlmuerzo = salidaAlmuerzo;
@@ -33,14 +30,12 @@ namespace Domain.Entities
 
         public void Update(
             Guid medicoId,
-            DateOnly fecha,
             TimeOnly horaEntrada,
             TimeOnly horaSalida,
             TimeOnly salidaAlmuerzo,
             TimeOnly retornoActividades)
         {
             MedicoId = medicoId;
-            Fecha = fecha;
             HoraEntrada = horaEntrada;
             HoraSalida = horaSalida;
             SalidaAlmuerzo = salidaAlmuerzo;

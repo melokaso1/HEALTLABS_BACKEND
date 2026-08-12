@@ -8,13 +8,13 @@ Exponer la API REST de HealtLab. Traduce peticiones HTTP en llamadas a use cases
 
 ## Qué se hizo / cambió en la entrega reciente
 
-- **Controllers delgados:** los ~30 controllers ya no usan `AppDbContext`; inyectan use cases (`CitaCrudUseCase`, `LoginUseCase`, etc.) y solo mapean HTTP ↔ DTO.
+- **Controllers delgados:** los ~30 controllers ya no usan `AppDbContext`; inyectan use cases **por operación** (`CreateCitaUseCase`, `GetAllCitaUseCase`, `LoginUseCase`, etc.) con `ExecuteAsync`, y solo mapean HTTP ↔ DTO.
 - **`AuthController`:** endpoints `login`, `refresh`, `logout`, `solicitar-recuperacion` y `reset-password`; delega en use cases de `Application/UseCases/Auth/`.
 - **`Program.cs`:** carga `.env` con DotNetEnv (busca hacia arriba desde el content root), valida `ConnectionStrings__DefaultConnection` y `JWT__*`, registra JWT Bearer, Swagger con esquema Bearer, CORS `Frontend`, y llama `AddApplication()` + `AddInfrastructure()`.
 - **Migraciones y seed al arrancar:** al iniciar la API se ejecutan `MigrateAsync()` y `IDbSeeder.SeedAllAsync()` (ver `Program.cs` líneas 93–108).
 - **`ExceptionHandlingMiddleware`:** captura excepciones no controladas y responde JSON con `statusCode` y `message` (404/400/401 según tipo de excepción).
 - **Autorización por roles:** constantes en `Api/Security/AppRoles.cs` — `Administrador`, `Profesional` (antes "Médico"), `Recepcionista`; combinaciones `Staff` y `Todos` para `[Authorize(Roles = ...)]`.
-- **Reglas de citas en HTTP:** `CitasController` expone `cancelar`, `reprogramar` y `delete` delegando en `CitaCrudUseCase`.
+- **Reglas de citas en HTTP:** `CitasController` expone `cancelar`, `reprogramar` y `delete` delegando en `CancelCitaUseCase`, `ReprogramarCitaUseCase`, `DeleteCitaUseCase`, etc.
 - **`ReportesController`:** consultas de citas por rango, conteo por estado y por médico (solo `Staff`).
 
 ## Relación con otras capas

@@ -1,6 +1,6 @@
 using Api.Security;
 using Application.DTOs.Cita;
-using Application.UseCases.Cita;
+using Application.UseCases.Citas;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,19 +11,34 @@ namespace Api.Controllers;
 [Authorize(Roles = AppRoles.Staff)]
 public sealed class CitasController : ControllerBase
 {
-    private readonly CitaCrudUseCase _useCase;
+    private readonly GetAllCitaUseCase _getAll;
+    private readonly GetCitaByIdUseCase _getById;
+    private readonly CreateCitaUseCase _create;
+    private readonly UpdateCitaUseCase _update;
+    private readonly CancelCitaUseCase _cancel;
+    private readonly ReprogramarCitaUseCase _reprogramar;
+    private readonly DeleteCitaUseCase _delete;
 
-    public CitasController(CitaCrudUseCase useCase) => _useCase = useCase;
+    public CitasController(
+        GetAllCitaUseCase getAll,
+        GetCitaByIdUseCase getById,
+        CreateCitaUseCase create,
+        UpdateCitaUseCase update,
+        CancelCitaUseCase cancel,
+        ReprogramarCitaUseCase reprogramar,
+        DeleteCitaUseCase delete)
+        => (_getAll, _getById, _create, _update, _cancel, _reprogramar, _delete)
+            = (getAll, getById, create, update, cancel, reprogramar, delete);
 
     [HttpGet]
     [Authorize(Roles = AppRoles.Todos)]
-    public async Task<IActionResult> GetAll() => Ok(await _useCase.GetAllAsync());
+    public async Task<IActionResult> GetAll() => Ok(await _getAll.ExecuteAsync());
 
     [HttpGet("{id:guid}")]
     [Authorize(Roles = AppRoles.Todos)]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var entity = await _useCase.GetByIdAsync(id);
+        var entity = await _getById.ExecuteAsync(id);
         return entity is null ? NotFound() : Ok(entity);
     }
 
@@ -32,7 +47,7 @@ public sealed class CitasController : ControllerBase
     {
         try
         {
-            var entity = await _useCase.CreateAsync(request);
+            var entity = await _create.ExecuteAsync(request);
             return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity);
         }
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
@@ -43,7 +58,7 @@ public sealed class CitasController : ControllerBase
     {
         try
         {
-            await _useCase.UpdateAsync(id, request);
+            await _update.ExecuteAsync(id, request);
             return NoContent();
         }
         catch (KeyNotFoundException) { return NotFound(); }
@@ -55,7 +70,7 @@ public sealed class CitasController : ControllerBase
     {
         try
         {
-            await _useCase.CancelAsync(id, request);
+            await _cancel.ExecuteAsync(id, request);
             return NoContent();
         }
         catch (KeyNotFoundException) { return NotFound(); }
@@ -67,7 +82,7 @@ public sealed class CitasController : ControllerBase
     {
         try
         {
-            await _useCase.ReprogramarAsync(id, request);
+            await _reprogramar.ExecuteAsync(id, request);
             return NoContent();
         }
         catch (KeyNotFoundException) { return NotFound(); }
@@ -79,7 +94,7 @@ public sealed class CitasController : ControllerBase
     {
         try
         {
-            await _useCase.CancelAsync(id, new CancelCitaDto { MotivoCancelacion = motivoCancelacion });
+            await _delete.ExecuteAsync(id, motivoCancelacion);
             return NoContent();
         }
         catch (KeyNotFoundException) { return NotFound(); }

@@ -9,8 +9,9 @@ Orquestar la lógica de aplicación: validaciones, flujos de negocio y mapeo ent
 ## Qué se hizo / cambió en la entrega reciente
 
 - **Use cases de autenticación:** `LoginUseCase`, `RefreshTokenUseCase`, `LogoutUseCase`, `SolicitarRecuperacionUseCase`, `ResetPasswordUseCase` — lockout, sesiones, tokens JWT vía `IJwtTokenGenerator` e `IPasswordHasher`.
-- **`*CrudUseCase` por módulo:** patrón base `EntityCrudUseCase<TEntity>` en `UseCases/Common/`; implementaciones por entidad (`CitaCrudUseCase`, `PacienteCrudUseCase`, `HorarioCrudUseCase`, etc.).
-- **Reglas de citas:** `CitaCrudUseCase` con `CancelAsync` y `ReprogramarAsync`; DTOs `CancelCitaDto`, `ReprogramarCitaDto`.
+- **Patrón canónico (estilo `Horarios/`):** un archivo = una operación — `CreateXUseCase`, `GetAllXUseCase`, `GetXByIdUseCase`, `UpdateXUseCase`, `DeleteXUseCase` con `ExecuteAsync`. Se eliminaron los `*CrudUseCase` y carpetas singular duplicadas (`Horario` vs `Horarios`, etc.).
+- **Reglas de citas:** en `UseCases/Citas/` (`CreateCitaUseCase`, `UpdateCitaUseCase`, `CancelCitaUseCase`, `ReprogramarCitaUseCase`) + helper `CitaSchedulingRules` (jornada del médico sin fecha en horario).
+- **Horario:** jornada por médico (`MedicoId` unique); sin `Fecha` (la fecha va en `cita`).
 - **Reportes:** `GetCitasPorRangoUseCase`, `GetConteoCitasPorEstadoUseCase`, `GetConteoCitasPorMedicoUseCase` en `UseCases/Reportes/`.
 - **DTOs Create/Update** por módulo en `Application/DTOs/` (más DTOs de Auth y Reportes).
 - **`DependencyInjection.AddApplication`:** registra automáticamente todas las clases públicas que terminan en `UseCase` (y casos especiales `GetAntecedentesByType`, `GetPersonaDireccionByPersonId`) como `Scoped`.
@@ -35,7 +36,7 @@ Api (controller) → Application (use case + DTO) → Domain (entidad + IGeneric
 4. **Reglas de negocio** (validar horarios, estados de cita, permisos de rol) van en el use case, no en Infrastructure.
 5. **Registrar use cases:** nombrar clases con sufijo `UseCase` para que `AddApplication` las detecte; si el nombre es distinto, agregarlo manualmente en `DependencyInjection.cs`.
 6. **Excepciones intencionales:** `KeyNotFoundException` → 404, `InvalidOperationException` / `ArgumentException` → 400; el middleware de Api las traduce.
-7. **Horarios:** validar coherencia de jornada (`HoraEntrada`, `HoraSalida`, almuerzo) en use cases de `Horarios/` o `HorarioCrudUseCase`.
+7. **Horarios:** validar coherencia de jornada (`HoraEntrada`, `HoraSalida`, almuerzo) en `UseCases/Horarios/`. Un médico = un horario; no crear carpetas singular duplicadas.
 
 ## Archivos clave
 
@@ -43,11 +44,10 @@ Api (controller) → Application (use case + DTO) → Domain (entidad + IGeneric
 |------|-------------|
 | `Application/DependencyInjection.cs` | Registro automático de use cases |
 | `Application/Common/UseCaseResult.cs` | Resultado tipado para Auth |
-| `Application/Common/EntityCrudUseCase.cs` | Base CRUD genérico |
+| `Application/UseCases/Horarios/*.cs` | Patrón de referencia (Create/Get/Update/Delete) |
 | `Application/UseCases/Auth/*.cs` | Login, refresh, logout, recuperación |
-| `Application/UseCases/Cita/CitaCrudUseCase.cs` | Citas + cancelar/reprogramar |
+| `Application/UseCases/Citas/*.cs` | Citas + cancelar/reprogramar + `CitaSchedulingRules` |
 | `Application/UseCases/Reportes/*.cs` | Consultas de reportes |
-| `Application/UseCases/Horario/` y `Horarios/` | Agenda del profesional |
 | `Application/DTOs/` | DTOs por módulo (~40 carpetas) |
 
 ## Flujo típico al agregar funcionalidad
