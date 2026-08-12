@@ -8,7 +8,7 @@ public class TratamientoPosologiaConfiguration : IEntityTypeConfiguration<Tratam
 {
     public void Configure(EntityTypeBuilder<TratamientoPosologiaEntity> builder)
     {
-        builder.ToTable("tratamiento_posologia");
+        builder.ToTable("tratamiento_posologias");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.TratamientoId).IsRequired();
         builder.Property(x => x.Dosis).HasMaxLength(100);

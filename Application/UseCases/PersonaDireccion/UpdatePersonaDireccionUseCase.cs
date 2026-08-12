@@ -18,7 +18,7 @@ namespace Application.UseCases.PersonaDireccion
             var persona_direccion = await _repo.GetEntityByIdAsync(id)
                 ?? throw new KeyNotFoundException("No Existe");
 
-            persona_direccion.Update(dto.Direccion, dto.Ciudad, dto.Tipo, dto.Principal);
+            persona_direccion.Update(dto.Direccion, dto.Ciudad, dto.Principal);
             await _repo.UpdateAsync(persona_direccion);
         }
     }

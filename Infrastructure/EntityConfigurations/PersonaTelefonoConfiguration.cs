@@ -8,9 +8,9 @@ public class PersonaTelefonoConfiguration : IEntityTypeConfiguration<PersonaTele
 {
     public void Configure(EntityTypeBuilder<PersonaTelefonoEntity> builder)
     {
-        builder.ToTable("persona_telefono", t =>
+        builder.ToTable("persona_telefonos", t =>
             t.HasCheckConstraint(
-                "CK_persona_telefono_tipo",
+                "CK_persona_telefonos_tipo",
                 "\"Tipo\" IS NULL OR \"Tipo\" IN ('movil', 'fijo', 'trabajo')"));
 
         builder.HasKey(x => x.Id);
@@ -22,7 +22,7 @@ public class PersonaTelefonoConfiguration : IEntityTypeConfiguration<PersonaTele
         builder.HasIndex(x => x.PersonaId)
             .IsUnique()
             .HasFilter("\"Principal\" = TRUE")
-            .HasDatabaseName("UX_persona_telefono_principal");
+            .HasDatabaseName("UX_persona_telefonos_principal");
 
         builder.HasOne(x => x.Persona)
             .WithMany(p => p.Telefonos)

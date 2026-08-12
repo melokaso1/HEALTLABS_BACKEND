@@ -8,7 +8,7 @@ public class PersonaConfiguration : IEntityTypeConfiguration<PersonaEntity>
 {
     public void Configure(EntityTypeBuilder<PersonaEntity> builder)
     {
-        builder.ToTable("persona");
+        builder.ToTable("personas");
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Nombre).IsRequired().HasMaxLength(100);

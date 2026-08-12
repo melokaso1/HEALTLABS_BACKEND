@@ -8,7 +8,7 @@ public class DetalleCitaConfiguration : IEntityTypeConfiguration<DetalleCitaEnti
 {
     public void Configure(EntityTypeBuilder<DetalleCitaEntity> builder)
     {
-        builder.ToTable("detalle_cita");
+        builder.ToTable("detalles_cita");
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.CitaId).IsRequired();

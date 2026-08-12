@@ -8,7 +8,7 @@ public class PacienteConfiguration : IEntityTypeConfiguration<PacienteEntity>
 {
     public void Configure(EntityTypeBuilder<PacienteEntity> builder)
     {
-        builder.ToTable("paciente");
+        builder.ToTable("pacientes");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.PersonaId).IsRequired();
         builder.Property(x => x.Activo).IsRequired();

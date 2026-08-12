@@ -35,9 +35,6 @@ public sealed class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
     {
-        request.IpAddress ??= HttpContext.Connection.RemoteIpAddress?.ToString();
-        request.UserAgent ??= Request.Headers.UserAgent.ToString();
-
         var result = await _login.ExecuteAsync(request);
         if (!result.Succeeded)
             return StatusCode(result.StatusCode, result.Error);
@@ -49,9 +46,6 @@ public sealed class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDto request)
     {
-        request.IpAddress ??= HttpContext.Connection.RemoteIpAddress?.ToString();
-        request.UserAgent ??= Request.Headers.UserAgent.ToString();
-
         var result = await _refresh.ExecuteAsync(request);
         if (!result.Succeeded)
             return StatusCode(result.StatusCode, result.Error);
@@ -63,7 +57,6 @@ public sealed class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> SolicitarRecuperacion([FromBody] SolicitarRecuperacionDto request)
     {
-        request.IpAddress ??= HttpContext.Connection.RemoteIpAddress?.ToString();
         var result = await _solicitarRecuperacion.ExecuteAsync(request);
         if (!result.Succeeded)
             return StatusCode(result.StatusCode, result.Error);

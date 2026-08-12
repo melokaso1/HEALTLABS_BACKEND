@@ -8,9 +8,9 @@ public class AntecedenteConfiguration : IEntityTypeConfiguration<AntecedenteEnti
 {
     public void Configure(EntityTypeBuilder<AntecedenteEntity> builder)
     {
-        builder.ToTable("antecedente", t =>
+        builder.ToTable("antecedentes", t =>
             t.HasCheckConstraint(
-                "CK_antecedente_tipo",
+                "CK_antecedentes_tipo",
                 "\"Tipo\" IN ('personal', 'familiar', 'quirurgico')"));
 
         builder.HasKey(x => x.Id);

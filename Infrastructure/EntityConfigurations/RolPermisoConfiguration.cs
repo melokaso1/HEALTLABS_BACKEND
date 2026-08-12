@@ -8,7 +8,7 @@ public class RolPermisoConfiguration : IEntityTypeConfiguration<RolPermisoEntity
 {
     public void Configure(EntityTypeBuilder<RolPermisoEntity> builder)
     {
-        builder.ToTable("rol_permiso");
+        builder.ToTable("rol_permisos");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.RolId).IsRequired();
         builder.Property(x => x.PermisoId).IsRequired();

@@ -8,7 +8,7 @@ public class CitaConfiguration : IEntityTypeConfiguration<CitaEntity>
 {
     public void Configure(EntityTypeBuilder<CitaEntity> builder)
     {
-        builder.ToTable("cita");
+        builder.ToTable("citas");
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.PacienteId).IsRequired();

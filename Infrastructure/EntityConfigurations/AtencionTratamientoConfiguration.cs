@@ -8,7 +8,7 @@ public class AtencionTratamientoConfiguration : IEntityTypeConfiguration<Atencio
 {
     public void Configure(EntityTypeBuilder<AtencionTratamientoEntity> builder)
     {
-        builder.ToTable("atencion_tratamiento");
+        builder.ToTable("atencion_tratamientos");
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.DetalleCitaId).IsRequired();

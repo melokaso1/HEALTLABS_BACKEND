@@ -20,7 +20,6 @@ namespace Application.UseCases.PersonaDireccion
                                         dto.PersonaId,
                                         dto.Direccion,
                                         dto.Ciudad,
-                                        dto.Tipo,
                                         dto.Principal
                                         );
 

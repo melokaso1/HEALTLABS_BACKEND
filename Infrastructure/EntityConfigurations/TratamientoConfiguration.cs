@@ -8,7 +8,7 @@ public class TratamientoConfiguration : IEntityTypeConfiguration<TratamientoEnti
 {
     public void Configure(EntityTypeBuilder<TratamientoEntity> builder)
     {
-        builder.ToTable("tratamiento");
+        builder.ToTable("tratamientos");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Codigo).HasMaxLength(50);
         builder.Property(x => x.Nombre).IsRequired().HasMaxLength(150);

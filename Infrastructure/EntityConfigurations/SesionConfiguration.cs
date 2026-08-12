@@ -8,7 +8,7 @@ public class SesionConfiguration : IEntityTypeConfiguration<SesionEntity>
 {
     public void Configure(EntityTypeBuilder<SesionEntity> builder)
     {
-        builder.ToTable("sesion");
+        builder.ToTable("sesiones");
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.UsuarioId).IsRequired();

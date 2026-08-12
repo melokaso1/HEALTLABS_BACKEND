@@ -8,7 +8,7 @@ public class DiagnosticoConfiguration : IEntityTypeConfiguration<DiagnosticoEnti
 {
     public void Configure(EntityTypeBuilder<DiagnosticoEntity> builder)
     {
-        builder.ToTable("diagnostico");
+        builder.ToTable("diagnosticos");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.CodigoCie10).IsRequired().HasMaxLength(20);
         builder.Property(x => x.Descripcion).IsRequired().HasMaxLength(500);

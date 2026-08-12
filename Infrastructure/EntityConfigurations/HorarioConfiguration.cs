@@ -8,9 +8,9 @@ public class HorarioConfiguration : IEntityTypeConfiguration<HorarioEntity>
 {
     public void Configure(EntityTypeBuilder<HorarioEntity> builder)
     {
-        builder.ToTable("horario", t =>
+        builder.ToTable("horarios", t =>
             t.HasCheckConstraint(
-                "CK_horario_jornada",
+                "CK_horarios_jornada",
                 "\"HoraEntrada\" < \"SalidaAlmuerzo\" AND \"SalidaAlmuerzo\" < \"RetornoActividades\" AND \"RetornoActividades\" < \"HoraSalida\""));
 
         builder.HasKey(x => x.Id);

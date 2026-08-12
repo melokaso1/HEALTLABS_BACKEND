@@ -8,7 +8,7 @@ public class CargoConfiguration : IEntityTypeConfiguration<CargoEntity>
 {
     public void Configure(EntityTypeBuilder<CargoEntity> builder)
     {
-        builder.ToTable("cargo");
+        builder.ToTable("cargos");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Codigo).HasMaxLength(50);
         builder.Property(x => x.Nombre).IsRequired().HasMaxLength(100);

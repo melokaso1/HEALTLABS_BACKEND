@@ -8,7 +8,7 @@ public class LoginIntentoConfiguration : IEntityTypeConfiguration<LoginIntentoEn
 {
     public void Configure(EntityTypeBuilder<LoginIntentoEntity> builder)
     {
-        builder.ToTable("login_intento");
+        builder.ToTable("login_intentos");
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.UsuarioId);

@@ -8,7 +8,7 @@ public class MedicoEspecialidadConfiguration : IEntityTypeConfiguration<MedicoEs
 {
     public void Configure(EntityTypeBuilder<MedicoEspecialidadEntity> builder)
     {
-        builder.ToTable("medico_especialidad");
+        builder.ToTable("medico_especialidades");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.MedicoId).IsRequired();
         builder.Property(x => x.EspecialidadId).IsRequired();
@@ -18,7 +18,7 @@ public class MedicoEspecialidadConfiguration : IEntityTypeConfiguration<MedicoEs
         builder.HasIndex(x => x.MedicoId)
             .IsUnique()
             .HasFilter("\"Principal\" = TRUE")
-            .HasDatabaseName("UX_medico_especialidad_principal");
+            .HasDatabaseName("UX_medico_especialidades_principal");
 
         builder.HasOne(x => x.Medico)
             .WithMany(m => m.Especialidades)

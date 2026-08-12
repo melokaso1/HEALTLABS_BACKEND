@@ -8,7 +8,7 @@ public class DetalleDiagnosticoConfiguration : IEntityTypeConfiguration<DetalleD
 {
     public void Configure(EntityTypeBuilder<DetalleDiagnosticoEntity> builder)
     {
-        builder.ToTable("detalle_diagnostico");
+        builder.ToTable("detalles_diagnostico");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.DetalleCitaId).IsRequired();
         builder.Property(x => x.DiagnosticoId).IsRequired();
@@ -18,7 +18,7 @@ public class DetalleDiagnosticoConfiguration : IEntityTypeConfiguration<DetalleD
         builder.HasIndex(x => x.DetalleCitaId)
             .IsUnique()
             .HasFilter("\"Principal\" = TRUE")
-            .HasDatabaseName("UX_detalle_diagnostico_principal");
+            .HasDatabaseName("UX_detalles_diagnostico_principal");
 
         builder.HasOne(x => x.DetalleCita)
             .WithMany(d => d.DetallesDiagnostico)

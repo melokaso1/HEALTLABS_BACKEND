@@ -96,8 +96,8 @@ public sealed class LoginUseCase
             ultimoUso: ahora,
             revocadoEn: null,
             motivoRevocacion: null,
-            ip: request.IpAddress,
-            userAgent: request.UserAgent,
+            ip: null,
+            userAgent: null,
             dispositivo: null);
 
         await _sesiones.AddAsync(sesion);
@@ -146,8 +146,8 @@ public sealed class LoginUseCase
             request.UsernameOrEmail,
             exitoso,
             motivo,
-            request.IpAddress,
-            request.UserAgent,
+            null,
+            null,
             fecha));
     }
 }

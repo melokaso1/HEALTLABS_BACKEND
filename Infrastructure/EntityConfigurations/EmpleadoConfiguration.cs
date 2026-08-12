@@ -8,7 +8,7 @@ public class EmpleadoConfiguration : IEntityTypeConfiguration<EmpleadoEntity>
 {
     public void Configure(EntityTypeBuilder<EmpleadoEntity> builder)
     {
-        builder.ToTable("empleado");
+        builder.ToTable("empleados");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.PersonaId).IsRequired();
         builder.Property(x => x.CargoId).IsRequired();

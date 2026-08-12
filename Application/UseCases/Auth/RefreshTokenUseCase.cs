@@ -66,8 +66,8 @@ public sealed class RefreshTokenUseCase
             ultimoUso: ahora,
             revocadoEn: null,
             motivoRevocacion: null,
-            ip: request.IpAddress ?? sesion.Ip,
-            userAgent: request.UserAgent ?? sesion.UserAgent,
+            ip: null,
+            userAgent: null,
             dispositivo: sesion.Dispositivo);
 
         await _sesiones.UpdateAsync(sesion);

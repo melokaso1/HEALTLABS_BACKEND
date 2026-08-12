@@ -40,7 +40,7 @@ public sealed class SolicitarRecuperacionUseCase
             tokenHash: _jwt.HashToken(tokenRaw),
             expiresAt: DateTime.UtcNow.AddHours(24),
             usadoEn: null,
-            ipSolicitud: request.IpAddress);
+            ipSolicitud: null);
 
         await _tokens.AddAsync(tokenEntity);
 

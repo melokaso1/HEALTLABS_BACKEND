@@ -8,7 +8,7 @@ public class TipoDocumentoConfiguration : IEntityTypeConfiguration<TipoDocumento
 {
     public void Configure(EntityTypeBuilder<TipoDocumentoEntity> builder)
     {
-        builder.ToTable("tipo_documento");
+        builder.ToTable("tipos_documento");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Codigo).IsRequired().HasMaxLength(20);
         builder.Property(x => x.Nombre).IsRequired().HasMaxLength(100);

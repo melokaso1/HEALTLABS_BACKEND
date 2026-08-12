@@ -8,7 +8,7 @@ public class CitaHistorialEstadoConfiguration : IEntityTypeConfiguration<CitaHis
 {
     public void Configure(EntityTypeBuilder<CitaHistorialEstadoEntity> builder)
     {
-        builder.ToTable("cita_historial_estado");
+        builder.ToTable("cita_historial_estados");
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.CitaId).IsRequired();

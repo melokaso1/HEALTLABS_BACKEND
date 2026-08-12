@@ -8,9 +8,9 @@ public class PacienteAlergiaConfiguration : IEntityTypeConfiguration<PacienteAle
 {
     public void Configure(EntityTypeBuilder<PacienteAlergiaEntity> builder)
     {
-        builder.ToTable("paciente_alergia", t =>
+        builder.ToTable("paciente_alergias", t =>
             t.HasCheckConstraint(
-                "CK_paciente_alergia_severidad",
+                "CK_paciente_alergias_severidad",
                 "\"Severidad\" IS NULL OR \"Severidad\" IN ('leve', 'moderada', 'severa')"));
 
         builder.HasKey(x => x.Id);

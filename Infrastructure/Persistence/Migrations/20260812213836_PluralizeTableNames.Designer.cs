@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260812213836_PluralizeTableNames")]
+    partial class PluralizeTableNames
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -632,6 +635,10 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<bool>("Principal")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Tipo")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PersonaId")
@@ -639,7 +646,10 @@ namespace Infrastructure.Persistence.Migrations
                         .HasDatabaseName("UX_persona_direcciones_principal")
                         .HasFilter("\"Principal\" = TRUE");
 
-                    b.ToTable("persona_direcciones", (string)null);
+                    b.ToTable("persona_direcciones", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_persona_direcciones_tipo", "\"Tipo\" IS NULL OR \"Tipo\" IN ('residencia', 'trabajo')");
+                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.PersonaEntity", b =>

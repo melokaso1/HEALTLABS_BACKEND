@@ -8,7 +8,7 @@ public class EspecialidadConfiguration : IEntityTypeConfiguration<EspecialidadEn
 {
     public void Configure(EntityTypeBuilder<EspecialidadEntity> builder)
     {
-        builder.ToTable("especialidad");
+        builder.ToTable("especialidades");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Nombre).IsRequired().HasMaxLength(100);
         builder.Property(x => x.Descripcion).HasMaxLength(255);

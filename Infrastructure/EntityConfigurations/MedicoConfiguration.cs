@@ -8,7 +8,7 @@ public class MedicoConfiguration : IEntityTypeConfiguration<MedicoEntity>
 {
     public void Configure(EntityTypeBuilder<MedicoEntity> builder)
     {
-        builder.ToTable("medico");
+        builder.ToTable("medicos");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.EmpleadoId).IsRequired();
         builder.Property(x => x.RegistroProfesional).HasMaxLength(100);

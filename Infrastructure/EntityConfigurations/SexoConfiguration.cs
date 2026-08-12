@@ -8,7 +8,7 @@ public class SexoConfiguration : IEntityTypeConfiguration<SexoEntity>
 {
     public void Configure(EntityTypeBuilder<SexoEntity> builder)
     {
-        builder.ToTable("sexo");
+        builder.ToTable("sexos");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Codigo).IsRequired().HasMaxLength(20);
         builder.Property(x => x.Nombre).IsRequired().HasMaxLength(50);

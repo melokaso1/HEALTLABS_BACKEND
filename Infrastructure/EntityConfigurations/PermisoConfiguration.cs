@@ -8,7 +8,7 @@ public class PermisoConfiguration : IEntityTypeConfiguration<PermisoEntity>
 {
     public void Configure(EntityTypeBuilder<PermisoEntity> builder)
     {
-        builder.ToTable("permiso");
+        builder.ToTable("permisos");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Codigo).IsRequired().HasMaxLength(100);
         builder.Property(x => x.Modulo).IsRequired().HasMaxLength(100);

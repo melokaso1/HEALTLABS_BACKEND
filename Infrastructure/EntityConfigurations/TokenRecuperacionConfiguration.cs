@@ -8,7 +8,7 @@ public class TokenRecuperacionConfiguration : IEntityTypeConfiguration<TokenRecu
 {
     public void Configure(EntityTypeBuilder<TokenRecuperacionEntity> builder)
     {
-        builder.ToTable("token_recuperacion");
+        builder.ToTable("tokens_recuperacion");
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.UsuarioId).IsRequired();
