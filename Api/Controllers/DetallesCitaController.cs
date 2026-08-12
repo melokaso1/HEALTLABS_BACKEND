@@ -8,7 +8,7 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Medico)]
+[Authorize]
 public sealed class DetallesCitaController : ControllerBase
 {
     private readonly GetAllDetalleCitaUseCase _getAll;
@@ -35,6 +35,7 @@ public sealed class DetallesCitaController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Medico)]
     public async Task<IActionResult> Create([FromBody] CreateDetalleCitaDto request)
     {
         try
@@ -46,6 +47,7 @@ public sealed class DetallesCitaController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = AppRoles.Medico)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateDetalleCitaDto request)
     {
         try
@@ -58,7 +60,7 @@ public sealed class DetallesCitaController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = AppRoles.Admin)]
+    [Authorize(Roles = $"{AppRoles.Admin},{AppRoles.Medico}")]
     public async Task<IActionResult> Delete(Guid id)
     {
         try

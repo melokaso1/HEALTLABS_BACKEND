@@ -8,7 +8,7 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Staff)]
+[Authorize]
 public sealed class PacienteAlergiasController : ControllerBase
 {
     private readonly GetAllPacienteAlergiaUseCase _getAll;
@@ -39,6 +39,7 @@ public sealed class PacienteAlergiasController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Staff)]
     public async Task<IActionResult> Create([FromBody] CreatePacienteAlergiaDto request)
     {
         try
@@ -50,6 +51,7 @@ public sealed class PacienteAlergiasController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = AppRoles.Staff)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePacienteAlergiaDto request)
     {
         try

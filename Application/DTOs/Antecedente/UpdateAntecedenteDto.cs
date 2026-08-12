@@ -4,7 +4,5 @@ namespace Application.DTOs.Antecedente
     {
         public string Tipo { get; set; } = string.Empty;
         public string Descripcion { get; set; } = string.Empty;
-        public Guid? UsuarioRegistroId { get; set; }
     }
 }
-

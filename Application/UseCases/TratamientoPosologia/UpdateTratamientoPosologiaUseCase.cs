@@ -18,12 +18,7 @@ namespace Application.UseCases.TratamientoPosologia
             var entity = await _repo.GetEntityByIdAsync(id)
                 ?? throw new KeyNotFoundException("No Existe");
 
-            entity.Update(
-                dto.TratamientoId,
-                dto.Dosis,
-                dto.Frecuencia,
-                dto.DuracionDias,
-                dto.Indicaciones);
+            entity.Update(dto.Dosis, dto.Frecuencia, dto.DuracionDias, dto.Indicaciones);
             await _repo.UpdateAsync(entity);
         }
     }

@@ -15,9 +15,8 @@ namespace Domain.Entities
             Nombre = nombre;
         }
 
-        public void Update(string codigo, string nombre)
+        public void Update(string nombre)
         {
-            Codigo = codigo;
             Nombre = nombre;
         }
     }

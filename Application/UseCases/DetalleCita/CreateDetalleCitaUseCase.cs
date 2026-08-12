@@ -47,20 +47,7 @@ public sealed class CreateDetalleCitaUseCase
         if (atendida is not null && cita.EstadoCitaId != atendida.Id)
         {
             var estadoAnterior = cita.EstadoCitaId;
-            cita.Update(
-                cita.PacienteId,
-                cita.MedicoId,
-                atendida.Id,
-                cita.TipoCitaId,
-                cita.Fecha,
-                cita.HoraInicio,
-                cita.HoraFin,
-                cita.MotivoConsulta,
-                cita.Observaciones,
-                cita.UsuarioCreacionId,
-                cita.MotivoCancelacion,
-                cita.UsuarioCancelacionId,
-                cita.FechaCancelacion);
+            cita.CambiarEstado(atendida.Id);
 
             await _citas.UpdateAsync(cita);
             await _historial.AddAsync(new CitaHistorialEstadoEntity(

@@ -8,18 +8,17 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Admin)]
+[Authorize]
 public sealed class DiagnosticosController : ControllerBase
 {
     private readonly GetAllDiagnosticosUseCase _getAll;
     private readonly GetDiagnosticoByIdUseCase _getById;
     private readonly CreateDiagnosticoUseCase _create;
-    private readonly UpdateDiagnosticoUseCase _update;
     private readonly DeleteDiagnosticoUseCase _delete;
 
     public DiagnosticosController(GetAllDiagnosticosUseCase getAll, GetDiagnosticoByIdUseCase getById,
-        CreateDiagnosticoUseCase create, UpdateDiagnosticoUseCase update, DeleteDiagnosticoUseCase delete)
-        => (_getAll, _getById, _create, _update, _delete) = (getAll, getById, create, update, delete);
+        CreateDiagnosticoUseCase create, DeleteDiagnosticoUseCase delete)
+        => (_getAll, _getById, _create, _delete) = (getAll, getById, create, delete);
 
     [HttpGet]
     [Authorize(Roles = AppRoles.Todos)]
@@ -34,6 +33,7 @@ public sealed class DiagnosticosController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Create([FromBody] CreateDiagnosticoDto request)
     {
         try
@@ -44,19 +44,8 @@ public sealed class DiagnosticosController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateDiagnosticoDto request)
-    {
-        try
-        {
-            await _update.ExecuteAsync(id, request);
-            return NoContent();
-        }
-        catch (KeyNotFoundException) { return NotFound(); }
-        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
-    }
-
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Delete(Guid id)
     {
         try

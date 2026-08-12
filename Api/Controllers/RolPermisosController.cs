@@ -8,18 +8,17 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Admin)]
+[Authorize]
 public sealed class RolPermisosController : ControllerBase
 {
     private readonly GetAllRolPermisoUseCase _getAll;
     private readonly GetRolPermisoByIdUseCase _getById;
     private readonly CreateRolPermisoUseCase _create;
-    private readonly UpdateRolPermisoUseCase _update;
     private readonly DeleteRolPermisoUseCase _delete;
 
     public RolPermisosController(GetAllRolPermisoUseCase getAll, GetRolPermisoByIdUseCase getById,
-        CreateRolPermisoUseCase create, UpdateRolPermisoUseCase update, DeleteRolPermisoUseCase delete)
-        => (_getAll, _getById, _create, _update, _delete) = (getAll, getById, create, update, delete);
+        CreateRolPermisoUseCase create, DeleteRolPermisoUseCase delete)
+        => (_getAll, _getById, _create, _delete) = (getAll, getById, create, delete);
 
     [HttpGet]
     [Authorize(Roles = AppRoles.Todos)]
@@ -39,6 +38,7 @@ public sealed class RolPermisosController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Create([FromBody] CreateRolPermisoDto request)
     {
         try
@@ -49,19 +49,8 @@ public sealed class RolPermisosController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] CreateRolPermisoDto request)
-    {
-        try
-        {
-            await _update.ExecuteAsync(id, request);
-            return NoContent();
-        }
-        catch (KeyNotFoundException) { return NotFound(); }
-        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
-    }
-
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Delete(Guid id)
     {
         try

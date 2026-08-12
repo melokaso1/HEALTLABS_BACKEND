@@ -9,5 +9,11 @@ public sealed class GetAllCitaUseCase
 
     public GetAllCitaUseCase(IGenericRepository<CitaEntity> repo) => _repo = repo;
 
-    public Task<IEnumerable<CitaEntity>> ExecuteAsync() => _repo.GetAllEntitiesAsync();
+    public Task<IEnumerable<CitaEntity>> ExecuteAsync(Guid? medicoId = null)
+    {
+        if (medicoId.HasValue)
+            return _repo.FindAsync(c => c.MedicoId == medicoId.Value);
+
+        return _repo.GetAllEntitiesAsync();
+    }
 }

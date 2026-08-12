@@ -8,7 +8,7 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Staff)]
+[Authorize]
 public sealed class PersonasController : ControllerBase
 {
     private readonly GetAllPersonasUseCase _getAll;
@@ -22,9 +22,11 @@ public sealed class PersonasController : ControllerBase
         => (_getAll, _getById, _create, _update, _delete) = (getAll, getById, create, update, delete);
 
     [HttpGet]
+    [Authorize(Roles = AppRoles.Staff)]
     public async Task<IActionResult> GetAll() => Ok(await _getAll.ExecuteAsync());
 
     [HttpGet("{id:guid}")]
+    [Authorize(Roles = AppRoles.Staff)]
     public async Task<IActionResult> GetById(Guid id)
     {
         var entity = await _getById.ExecuteAsync(id);
@@ -32,6 +34,7 @@ public sealed class PersonasController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Staff)]
     public async Task<IActionResult> Create([FromBody] CreatePersonaDto request)
     {
         try
@@ -43,6 +46,7 @@ public sealed class PersonasController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = AppRoles.Staff)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePersonaDto request)
     {
         try

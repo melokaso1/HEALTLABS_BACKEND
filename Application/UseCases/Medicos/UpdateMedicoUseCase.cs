@@ -1,10 +1,6 @@
-﻿using Application.DTOs.Cita;
-using Application.DTOs.Medico;
+﻿using Application.DTOs.Medico;
 using Domain.Entities;
 using Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.UseCases.Medicos
 {
@@ -19,19 +15,11 @@ namespace Application.UseCases.Medicos
 
         public async Task ExecuteAsync(Guid id, UpdateMedicoDto dto)
         {
-            var medico = await _repo.GetEntityByIdAsync(id);
+            var medico = await _repo.GetEntityByIdAsync(id)
+                ?? throw new ArgumentException("No Existe");
 
-            if (medico == null)
-            {
-                throw new ArgumentException("No Existe");
-            }
-
-            medico.EmpleadoId = dto.EmpleadoId;
-            medico.RegistroProfesional = dto.RegistroProfesional;
-            medico.Activo = dto.Activo;
-
+            medico.Update(dto.RegistroProfesional, dto.Activo);
             await _repo.UpdateAsync(medico);
-
         }
     }
 }

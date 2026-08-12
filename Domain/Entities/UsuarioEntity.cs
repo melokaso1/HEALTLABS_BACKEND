@@ -54,7 +54,6 @@ namespace Domain.Entities
         }
 
         public void Update(
-            Guid empleadoId,
             Guid rolId,
             string username,
             string email,
@@ -67,7 +66,6 @@ namespace Domain.Entities
             DateTime? passwordChangedAt,
             int tokenVersion)
         {
-            EmpleadoId = empleadoId;
             RolId = rolId;
             Username = username;
             Email = email;

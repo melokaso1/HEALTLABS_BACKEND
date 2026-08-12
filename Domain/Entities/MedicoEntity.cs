@@ -21,9 +21,8 @@ namespace Domain.Entities
             Activo = activo;
         }
 
-        public void Update(Guid empleadoId, string? registroProfesional, bool activo)
+        public void Update(string? registroProfesional, bool activo)
         {
-            EmpleadoId = empleadoId;
             RegistroProfesional = registroProfesional;
             Activo = activo;
         }

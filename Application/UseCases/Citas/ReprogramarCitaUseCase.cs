@@ -29,46 +29,28 @@ public sealed class ReprogramarCitaUseCase
         if (cita.EstadoCitaId == cancelada.Id)
             throw new InvalidOperationException("No se puede reprogramar una cita cancelada.");
 
-        await _rules.EnsureWithinHorarioAsync(cita.MedicoId, dto.HoraInicio, dto.HoraFin);
+        await _rules.EnsureWithinHorarioAsync(cita.MedicoId, dto.Fecha, dto.HoraInicio, dto.HoraFin);
         await _rules.EnsureNoOverlapAsync(cita.MedicoId, dto.Fecha, dto.HoraInicio, dto.HoraFin, excludeCitaId: id);
 
         var estadoAnterior = cita.EstadoCitaId;
         var agendada = await _rules.GetEstadoByCodigoAsync("AGENDADA");
 
-        cita.Update(
-            cita.PacienteId,
-            cita.MedicoId,
+        cita.Reprogramar(
             agendada.Id,
-            cita.TipoCitaId,
             dto.Fecha,
             dto.HoraInicio,
             dto.HoraFin,
-            cita.MotivoConsulta,
-            dto.Observaciones ?? cita.Observaciones,
-            cita.UsuarioCreacionId,
-            null,
-            null,
-            null);
+            dto.Observaciones ?? cita.Observaciones);
 
         await _citas.UpdateAsync(cita);
 
-        if (estadoAnterior != agendada.Id)
-        {
-            await _historial.AddAsync(new CitaHistorialEstadoEntity(
-                cita.Id,
-                estadoAnterior,
-                agendada.Id,
-                dto.UsuarioId,
-                "Cita reprogramada"));
-        }
-        else
-        {
-            await _historial.AddAsync(new CitaHistorialEstadoEntity(
-                cita.Id,
-                estadoAnterior,
-                cita.EstadoCitaId,
-                dto.UsuarioId,
-                "Cita reprogramada (mismo estado)"));
-        }
+        await _historial.AddAsync(new CitaHistorialEstadoEntity(
+            cita.Id,
+            estadoAnterior,
+            cita.EstadoCitaId,
+            null,
+            estadoAnterior != agendada.Id
+                ? "Cita reprogramada"
+                : "Cita reprogramada (mismo estado)"));
     }
 }

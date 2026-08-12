@@ -18,18 +18,7 @@ namespace Application.UseCases.Horarios
             var horario = await _repo.GetEntityByIdAsync(id)
                 ?? throw new KeyNotFoundException("No Existe");
 
-            if (horario == null)
-            {
-                throw new ArgumentException("No Existe");
-            }
-
-            horario.HoraEntrada = dto.HoraEntrada;
-            horario.HoraSalida = dto.HoraSalida;
-            horario.SalidaAlmuerzo = dto.SalidaAlmuerzo;
-            horario.RetornoActividades = dto.RetornoActividades;
-
             horario.Update(
-                dto.MedicoId,
                 dto.HoraEntrada,
                 dto.HoraSalida,
                 dto.SalidaAlmuerzo,

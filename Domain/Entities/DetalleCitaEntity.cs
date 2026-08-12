@@ -29,5 +29,11 @@ namespace Domain.Entities
             ResumenConsulta = resumenConsulta;
             FechaRegistro = DateTime.UtcNow;
         }
+
+        public void Update(string? notaAtencion, string? resumenConsulta)
+        {
+            NotaAtencion = notaAtencion;
+            ResumenConsulta = resumenConsulta;
+        }
     }
 }

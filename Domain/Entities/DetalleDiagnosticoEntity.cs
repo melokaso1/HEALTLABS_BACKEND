@@ -19,5 +19,12 @@ namespace Domain.Entities
             DiagnosticoId = diagnosticoId;
             Principal = principal;
         }
+
+        public void Update(Guid detalleCitaId, Guid diagnosticoId, bool principal)
+        {
+            DetalleCitaId = detalleCitaId;
+            DiagnosticoId = diagnosticoId;
+            Principal = principal;
+        }
     }
 }

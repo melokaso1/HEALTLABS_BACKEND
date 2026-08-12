@@ -28,14 +28,10 @@ namespace Domain.Entities
             UsuarioRegistroId = usuarioRegistroId;
         }
 
-        public void Update(
-            string tipo,
-            string descripcion,
-            Guid? usuarioRegistroId)
+        public void Update(string tipo, string descripcion)
         {
             Tipo = tipo;
             Descripcion = descripcion;
-            UsuarioRegistroId = usuarioRegistroId;
         }
     }
 }

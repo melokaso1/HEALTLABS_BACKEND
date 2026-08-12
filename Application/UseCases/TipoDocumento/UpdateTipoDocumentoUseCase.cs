@@ -15,19 +15,11 @@ namespace Application.UseCases.TipoDocumento
 
         public async Task ExecuteAsync(Guid id, UpdateTipoDocumentoDto dto)
         {
-            var tipo_documento = await _repo.GetEntityByIdAsync(id);
+            var tipo_documento = await _repo.GetEntityByIdAsync(id)
+                ?? throw new ArgumentException("No Existe");
 
-            if (tipo_documento == null)
-            {
-                throw new ArgumentException("No Existe");
-            }
-
-            tipo_documento.Codigo = dto.Codigo;
-            tipo_documento.Nombre = dto.Nombre;
-
+            tipo_documento.Update(dto.Nombre);
             await _repo.UpdateAsync(tipo_documento);
-
         }
     }
 }
-

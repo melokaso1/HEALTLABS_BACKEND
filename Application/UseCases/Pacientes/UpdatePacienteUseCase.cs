@@ -1,5 +1,4 @@
-﻿using Application.DTOs.Cita;
-using Application.DTOs.Paciente;
+﻿using Application.DTOs.Paciente;
 using Domain.Entities;
 using Domain.Interfaces;
 
@@ -16,18 +15,11 @@ namespace Application.UseCases.Pacientes
 
         public async Task ExecuteAsync(Guid id, UpdatePacienteDto dto)
         {
-            var paciente = await _repo.GetEntityByIdAsync(id);
+            var paciente = await _repo.GetEntityByIdAsync(id)
+                ?? throw new ArgumentException("No Existe");
 
-            if (paciente == null)
-            {
-                throw new ArgumentException("No Existe");
-            }
-
-            paciente.PersonaId = dto.PersonaId;
-            paciente.Activo = dto.Activo;
-
+            paciente.Update(dto.Activo);
             await _repo.UpdateAsync(paciente);
-
         }
     }
 }

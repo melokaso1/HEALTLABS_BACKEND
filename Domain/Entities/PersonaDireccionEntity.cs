@@ -29,13 +29,11 @@ namespace Domain.Entities
         }
 
         public void Update(
-            Guid personaId,
             string direccion,
             string? ciudad,
             string? tipo,
             bool principal)
         {
-            PersonaId = personaId;
             Direccion = direccion;
             Ciudad = ciudad;
             Tipo = tipo;

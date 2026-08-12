@@ -31,13 +31,11 @@ namespace Domain.Entities
         }
 
         public void Update(
-            Guid pacienteId,
             string sustancia,
             string? reaccion,
             string? severidad,
             bool activo)
         {
-            PacienteId = pacienteId;
             Sustancia = sustancia;
             Reaccion = reaccion;
             Severidad = severidad;

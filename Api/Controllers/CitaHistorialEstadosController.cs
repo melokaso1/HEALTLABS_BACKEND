@@ -8,18 +8,17 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Staff)]
+[Authorize]
 public sealed class CitaHistorialEstadosController : ControllerBase
 {
     private readonly GetAllCitaHistorialEstadoUseCase _getAll;
     private readonly GetCitaHistorialEstadoByIdUseCase _getById;
     private readonly CreateCitaHistorialEstadoUseCase _create;
-    private readonly UpdateCitaHistorialEstadoUseCase _update;
     private readonly DeleteCitaHistorialEstadoUseCase _delete;
 
     public CitaHistorialEstadosController(GetAllCitaHistorialEstadoUseCase getAll, GetCitaHistorialEstadoByIdUseCase getById,
-        CreateCitaHistorialEstadoUseCase create, UpdateCitaHistorialEstadoUseCase update, DeleteCitaHistorialEstadoUseCase delete)
-        => (_getAll, _getById, _create, _update, _delete) = (getAll, getById, create, update, delete);
+        CreateCitaHistorialEstadoUseCase create, DeleteCitaHistorialEstadoUseCase delete)
+        => (_getAll, _getById, _create, _delete) = (getAll, getById, create, delete);
 
     [HttpGet]
     [Authorize(Roles = AppRoles.Todos)]
@@ -39,6 +38,7 @@ public sealed class CitaHistorialEstadosController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Staff)]
     public async Task<IActionResult> Create([FromBody] CreateCitaHistorialEstadoDto request)
     {
         try
@@ -46,18 +46,6 @@ public sealed class CitaHistorialEstadosController : ControllerBase
             var entity = await _create.ExecuteAsync(request);
             return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity);
         }
-        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
-    }
-
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] CreateCitaHistorialEstadoDto request)
-    {
-        try
-        {
-            await _update.ExecuteAsync(id, request);
-            return NoContent();
-        }
-        catch (KeyNotFoundException) { return NotFound(); }
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 

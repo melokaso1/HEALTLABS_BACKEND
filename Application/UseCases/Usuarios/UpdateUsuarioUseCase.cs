@@ -20,27 +20,35 @@ namespace Application.UseCases.Usuarios
 
         public async Task ExecuteAsync(Guid id, UpdateUsuarioDto dto)
         {
-            var usuario = await _repo.GetEntityByIdAsync(id);
+            var usuario = await _repo.GetEntityByIdAsync(id)
+                ?? throw new KeyNotFoundException("El usuario solicitado no existe.");
 
-            if (usuario == null)
-                throw new KeyNotFoundException("El usuario solicitado no existe.");
+            var passwordHash = usuario.PasswordHash;
+            var passwordChangedAt = usuario.PasswordChangedAt;
+            var tokenVersion = usuario.TokenVersion;
 
-            usuario.EmpleadoId = dto.EmpleadoId;
-            usuario.RolId = dto.RolId;
-            usuario.Username = dto.Username;
-            usuario.Email = dto.Email;
             if (!string.IsNullOrWhiteSpace(dto.Password))
             {
                 PasswordValueObject.Create(dto.Password);
-                usuario.PasswordHash = _passwordHasher.Hash(dto.Password);
-                usuario.PasswordChangedAt = DateTime.UtcNow;
-                usuario.TokenVersion++;
+                passwordHash = _passwordHasher.Hash(dto.Password);
+                passwordChangedAt = DateTime.UtcNow;
+                tokenVersion++;
             }
-            usuario.Activo = dto.Activo;
-            usuario.DebeCambiarPassword = dto.DebeCambiarPassword;
+
+            usuario.Update(
+                dto.RolId,
+                dto.Username,
+                dto.Email,
+                passwordHash,
+                dto.Activo,
+                usuario.UltimoLogin,
+                usuario.IntentosFallidos,
+                usuario.BloqueadoHasta,
+                dto.DebeCambiarPassword,
+                passwordChangedAt,
+                tokenVersion);
 
             await _repo.UpdateAsync(usuario);
-
         }
     }
 }

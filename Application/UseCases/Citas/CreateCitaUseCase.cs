@@ -22,14 +22,21 @@ public sealed class CreateCitaUseCase
 
     public async Task<CitaEntity> ExecuteAsync(CreateCitaDto dto)
     {
-        await _rules.ValidateReferencesAsync(dto.PacienteId, dto.MedicoId, dto.EstadoCitaId, dto.TipoCitaId, dto.UsuarioCreacionId);
-        await _rules.EnsureWithinHorarioAsync(dto.MedicoId, dto.HoraInicio, dto.HoraFin);
+        var agendada = await _rules.GetEstadoByCodigoAsync("AGENDADA");
+
+        await _rules.ValidateReferencesAsync(
+            dto.PacienteId,
+            dto.MedicoId,
+            agendada.Id,
+            dto.TipoCitaId,
+            dto.UsuarioCreacionId);
+        await _rules.EnsureWithinHorarioAsync(dto.MedicoId, dto.Fecha, dto.HoraInicio, dto.HoraFin);
         await _rules.EnsureNoOverlapAsync(dto.MedicoId, dto.Fecha, dto.HoraInicio, dto.HoraFin, excludeCitaId: null);
 
         var cita = new CitaEntity(
             dto.PacienteId,
             dto.MedicoId,
-            dto.EstadoCitaId,
+            agendada.Id,
             dto.TipoCitaId,
             dto.Fecha,
             dto.HoraInicio,

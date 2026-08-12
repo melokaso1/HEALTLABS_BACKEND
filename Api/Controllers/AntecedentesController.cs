@@ -8,7 +8,7 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Staff)]
+[Authorize]
 public sealed class AntecedentesController : ControllerBase
 {
     private readonly GetAllAntecedenteUseCase _getAll;
@@ -39,6 +39,7 @@ public sealed class AntecedentesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Staff)]
     public async Task<IActionResult> Create([FromBody] CreateAntecedenteDto request)
     {
         try
@@ -50,6 +51,7 @@ public sealed class AntecedentesController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = AppRoles.Staff)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateAntecedenteDto request)
     {
         try

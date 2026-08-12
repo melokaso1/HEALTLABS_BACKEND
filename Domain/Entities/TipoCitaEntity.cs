@@ -19,9 +19,8 @@ namespace Domain.Entities
             Activo = activo;
         }
 
-        public void Update(string codigo, string nombre, int duracionMinutos, bool activo)
+        public void Update(string nombre, int duracionMinutos, bool activo)
         {
-            Codigo = codigo;
             Nombre = nombre;
             DuracionMinutos = duracionMinutos;
             Activo = activo;

@@ -18,7 +18,7 @@ namespace Application.UseCases.Cargo
             var entity = await _repo.GetEntityByIdAsync(id)
                 ?? throw new KeyNotFoundException("No Existe");
 
-            entity.Update(dto.Codigo, dto.Nombre, dto.Descripcion, dto.NivelJerarquico);
+            entity.Update(dto.Nombre, dto.Descripcion, dto.NivelJerarquico);
             await _repo.UpdateAsync(entity);
         }
     }

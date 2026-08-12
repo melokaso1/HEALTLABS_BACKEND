@@ -18,7 +18,7 @@ namespace Application.UseCases.EstadoCita
             var entity = await _repo.GetEntityByIdAsync(id)
                 ?? throw new KeyNotFoundException("No Existe");
 
-            entity.Update(dto.Codigo, dto.Descripcion);
+            entity.Update(dto.Descripcion);
             await _repo.UpdateAsync(entity);
         }
     }

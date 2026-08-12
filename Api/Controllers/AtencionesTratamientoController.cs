@@ -8,18 +8,17 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Medico)]
+[Authorize]
 public sealed class AtencionesTratamientoController : ControllerBase
 {
     private readonly GetAllAtencionTratamientoUseCase _getAll;
     private readonly GetAtencionTratamientoByIdUseCase _getById;
     private readonly CreateAtencionTratamientoUseCase _create;
-    private readonly UpdateAtencionTratamientoUseCase _update;
     private readonly DeleteAtencionTratamientoUseCase _delete;
 
     public AtencionesTratamientoController(GetAllAtencionTratamientoUseCase getAll, GetAtencionTratamientoByIdUseCase getById,
-        CreateAtencionTratamientoUseCase create, UpdateAtencionTratamientoUseCase update, DeleteAtencionTratamientoUseCase delete)
-        => (_getAll, _getById, _create, _update, _delete) = (getAll, getById, create, update, delete);
+        CreateAtencionTratamientoUseCase create, DeleteAtencionTratamientoUseCase delete)
+        => (_getAll, _getById, _create, _delete) = (getAll, getById, create, delete);
 
     [HttpGet]
     [Authorize(Roles = AppRoles.Todos)]
@@ -39,6 +38,7 @@ public sealed class AtencionesTratamientoController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Medico)]
     public async Task<IActionResult> Create([FromBody] CreateAtencionTratamientoDto request)
     {
         try
@@ -49,19 +49,8 @@ public sealed class AtencionesTratamientoController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateAtencionTratamientoDto request)
-    {
-        try
-        {
-            await _update.ExecuteAsync(id, request);
-            return NoContent();
-        }
-        catch (KeyNotFoundException) { return NotFound(); }
-        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
-    }
-
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = AppRoles.Medico)]
     public async Task<IActionResult> Delete(Guid id)
     {
         try

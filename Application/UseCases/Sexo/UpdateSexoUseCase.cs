@@ -18,7 +18,7 @@ namespace Application.UseCases.Sexo
             var entity = await _repo.GetEntityByIdAsync(id)
                 ?? throw new KeyNotFoundException("No Existe");
 
-            entity.Update(dto.Codigo, dto.Nombre);
+            entity.Update(dto.Nombre);
             await _repo.UpdateAsync(entity);
         }
     }

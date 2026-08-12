@@ -8,7 +8,7 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Admin)]
+[Authorize]
 public sealed class MedicosController : ControllerBase
 {
     private readonly GetAllMedicoUseCase _getAll;
@@ -34,6 +34,7 @@ public sealed class MedicosController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Create([FromBody] CreateMedicoDto request)
     {
         try
@@ -45,6 +46,7 @@ public sealed class MedicosController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateMedicoDto request)
     {
         try
@@ -57,6 +59,7 @@ public sealed class MedicosController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Delete(Guid id)
     {
         try

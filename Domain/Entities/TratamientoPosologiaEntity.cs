@@ -23,9 +23,8 @@ namespace Domain.Entities
             Indicaciones = indicaciones;
         }
 
-        public void Update(Guid tratamientoId, string? dosis, string? frecuencia, int? duracionDias, string? indicaciones)
+        public void Update(string? dosis, string? frecuencia, int? duracionDias, string? indicaciones)
         {
-            TratamientoId = tratamientoId;
             Dosis = dosis;
             Frecuencia = frecuencia;
             DuracionDias = duracionDias;

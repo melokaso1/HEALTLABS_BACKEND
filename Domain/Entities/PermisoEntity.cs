@@ -19,9 +19,8 @@ namespace Domain.Entities
             Descripcion = descripcion;
         }
 
-        public void Update(string codigo, string modulo, string? descripcion)
+        public void Update(string modulo, string? descripcion)
         {
-            Codigo = codigo;
             Modulo = modulo;
             Descripcion = descripcion;
         }

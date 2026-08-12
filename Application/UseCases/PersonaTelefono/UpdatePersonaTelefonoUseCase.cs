@@ -18,7 +18,7 @@ namespace Application.UseCases.PersonaTelefono
             var entity = await _repo.GetEntityByIdAsync(id)
                 ?? throw new KeyNotFoundException("No Existe");
 
-            entity.Update(dto.PersonaId, dto.Telefono, dto.Tipo, dto.Principal);
+            entity.Update(dto.Telefono, dto.Tipo, dto.Principal);
             await _repo.UpdateAsync(entity);
         }
     }

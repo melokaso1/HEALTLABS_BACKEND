@@ -8,7 +8,7 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Admin)]
+[Authorize]
 public sealed class TiposCitaController : ControllerBase
 {
     private readonly GetAllTipoCitaUseCase _getAll;
@@ -34,6 +34,7 @@ public sealed class TiposCitaController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Create([FromBody] CreateTipoCitaDto request)
     {
         try
@@ -45,6 +46,7 @@ public sealed class TiposCitaController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTipoCitaDto request)
     {
         try
@@ -57,6 +59,7 @@ public sealed class TiposCitaController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Delete(Guid id)
     {
         try

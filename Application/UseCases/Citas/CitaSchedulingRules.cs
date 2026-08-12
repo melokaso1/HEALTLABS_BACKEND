@@ -65,13 +65,16 @@ public sealed class CitaSchedulingRules
             throw new InvalidOperationException("La hora de fin debe ser posterior a la hora de inicio.");
 
         var cancelada = await _estados.FirstOrDefaultAsync(e => e.Codigo == "CANCELADA");
+        var noAsistio = await _estados.FirstOrDefaultAsync(e => e.Codigo == "NO_ASISTIO");
         var canceladaId = cancelada?.Id;
+        var noAsistioId = noAsistio?.Id;
 
         var overlap = await _citas.AnyAsync(c =>
             c.MedicoId == medicoId &&
             c.Fecha == fecha &&
             (!excludeCitaId.HasValue || c.Id != excludeCitaId.Value) &&
             (canceladaId == null || c.EstadoCitaId != canceladaId) &&
+            (noAsistioId == null || c.EstadoCitaId != noAsistioId) &&
             c.HoraInicio < horaFin &&
             c.HoraFin > horaInicio);
 
@@ -81,9 +84,13 @@ public sealed class CitaSchedulingRules
 
     public async Task EnsureWithinHorarioAsync(
         Guid medicoId,
+        DateOnly fecha,
         TimeOnly horaInicio,
         TimeOnly horaFin)
     {
+        if (fecha.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+            throw new InvalidOperationException("No se pueden agendar citas en fin de semana.");
+
         var horario = await _horarios.FirstOrDefaultAsync(h => h.MedicoId == medicoId);
         if (horario is null)
             throw new InvalidOperationException("El médico no tiene jornada configurada.");

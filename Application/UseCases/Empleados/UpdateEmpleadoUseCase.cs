@@ -15,21 +15,11 @@ namespace Application.UseCases.Empleados
 
         public async Task ExecuteAsync(Guid id, UpdateEmpleadoDto dto)
         {
-            var empleado = await _repo.GetEntityByIdAsync(id);
+            var empleado = await _repo.GetEntityByIdAsync(id)
+                ?? throw new ArgumentException("No Existe");
 
-            if (empleado == null)
-            {
-                throw new ArgumentException("No Existe");
-            }
-
-            empleado.PersonaId = dto.PersonaId;
-            empleado.CargoId = dto.CargoId;
-            empleado.FechaIngreso = dto.FechaIngreso;
-            empleado.FechaRetiro = dto.FechaRetiro;
-            empleado.Activo = dto.Activo;
-
+            empleado.Update(dto.CargoId, dto.FechaIngreso, dto.FechaRetiro, dto.Activo);
             await _repo.UpdateAsync(empleado);
-
         }
     }
 }

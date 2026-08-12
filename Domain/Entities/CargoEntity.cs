@@ -19,7 +19,7 @@ namespace Domain.Entities
             NivelJerarquico = nivelJerarquico;
         }
 
-        public void Update(string? codigo, string nombre, string? descripcion, int? nivelJerarquico)
+        public void Update(string nombre, string? descripcion, int? nivelJerarquico)
         {
             Nombre = nombre;
             Descripcion = descripcion;

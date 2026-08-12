@@ -18,12 +18,7 @@ namespace Application.UseCases.Antecedentes
             var antecedente = await _repo.GetEntityByIdAsync(id)
                 ?? throw new KeyNotFoundException("No Existe");
 
-            antecedente.Update(
-                dto.PacienteId,
-                dto.Tipo,
-                dto.Descripcion,
-                dto.UsuarioRegistroId);
-
+            antecedente.Update(dto.Tipo, dto.Descripcion);
             await _repo.UpdateAsync(antecedente);
         }
     }

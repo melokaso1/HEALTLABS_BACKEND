@@ -21,9 +21,8 @@ namespace Domain.Entities
             FechaRegistro = DateTime.UtcNow;
         }
 
-        public void Update(Guid personaId, bool activo)
+        public void Update(bool activo)
         {
-            PersonaId = personaId;
             Activo = activo;
         }
     }

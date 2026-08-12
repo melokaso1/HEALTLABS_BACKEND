@@ -8,7 +8,7 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Admin)]
+[Authorize]
 public sealed class PermisosController : ControllerBase
 {
     private readonly GetAllPermisoUseCase _getAll;
@@ -39,6 +39,7 @@ public sealed class PermisosController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Create([FromBody] CreatePermisoDto request)
     {
         try
@@ -50,6 +51,7 @@ public sealed class PermisosController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePermisoDto request)
     {
         try
@@ -62,6 +64,7 @@ public sealed class PermisosController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Delete(Guid id)
     {
         try

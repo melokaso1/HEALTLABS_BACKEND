@@ -1,5 +1,4 @@
-﻿using Application.DTOs.Paciente;
-using Application.DTOs.PersonaDireccion;
+﻿using Application.DTOs.PersonaDireccion;
 using Domain.Entities;
 using Domain.Interfaces;
 
@@ -16,21 +15,11 @@ namespace Application.UseCases.PersonaDireccion
 
         public async Task ExecuteAsync(Guid id, UpdatePersonaDireccionDto dto)
         {
-            var persona_direccion = await _repo.GetEntityByIdAsync(id);
+            var persona_direccion = await _repo.GetEntityByIdAsync(id)
+                ?? throw new ArgumentException("No Existe");
 
-            if (persona_direccion == null)
-            {
-                throw new ArgumentException("No Existe");
-            }
-
-            persona_direccion.PersonaId = dto.PersonaId;
-            persona_direccion.Direccion = dto.Direccion;
-            persona_direccion.Ciudad = dto.Ciudad;
-            persona_direccion.Tipo = dto.Tipo;
-            persona_direccion.Principal = dto.Principal;
-
+            persona_direccion.Update(dto.Direccion, dto.Ciudad, dto.Tipo, dto.Principal);
             await _repo.UpdateAsync(persona_direccion);
-
         }
     }
 }

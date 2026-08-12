@@ -8,18 +8,17 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Medico)]
+[Authorize]
 public sealed class DetalleDiagnosticosController : ControllerBase
 {
     private readonly GetAllDetalleDiagnosticoUseCase _getAll;
     private readonly GetDetalleDiagnosticoByIdUseCase _getById;
     private readonly CreateDetalleDiagnosticoUseCase _create;
-    private readonly UpdateDetalleDiagnosticoUseCase _update;
     private readonly DeleteDetalleDiagnosticoUseCase _delete;
 
     public DetalleDiagnosticosController(GetAllDetalleDiagnosticoUseCase getAll, GetDetalleDiagnosticoByIdUseCase getById,
-        CreateDetalleDiagnosticoUseCase create, UpdateDetalleDiagnosticoUseCase update, DeleteDetalleDiagnosticoUseCase delete)
-        => (_getAll, _getById, _create, _update, _delete) = (getAll, getById, create, update, delete);
+        CreateDetalleDiagnosticoUseCase create, DeleteDetalleDiagnosticoUseCase delete)
+        => (_getAll, _getById, _create, _delete) = (getAll, getById, create, delete);
 
     [HttpGet]
     [Authorize(Roles = AppRoles.Todos)]
@@ -39,6 +38,7 @@ public sealed class DetalleDiagnosticosController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Medico)]
     public async Task<IActionResult> Create([FromBody] CreateDetalleDiagnosticoDto request)
     {
         try
@@ -49,19 +49,8 @@ public sealed class DetalleDiagnosticosController : ControllerBase
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateDetalleDiagnosticoDto request)
-    {
-        try
-        {
-            await _update.ExecuteAsync(id, request);
-            return NoContent();
-        }
-        catch (KeyNotFoundException) { return NotFound(); }
-        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
-    }
-
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = AppRoles.Medico)]
     public async Task<IActionResult> Delete(Guid id)
     {
         try

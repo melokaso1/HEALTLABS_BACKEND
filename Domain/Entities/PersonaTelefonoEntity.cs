@@ -21,9 +21,8 @@ namespace Domain.Entities
             Principal = principal;
         }
 
-        public void Update(Guid personaId, string telefono, string? tipo, bool principal)
+        public void Update(string telefono, string? tipo, bool principal)
         {
-            PersonaId = personaId;
             Telefono = telefono;
             Tipo = tipo;
             Principal = principal;

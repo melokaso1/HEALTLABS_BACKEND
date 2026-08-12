@@ -55,25 +55,38 @@ namespace Domain.Entities
             FechaCreacion = DateTime.UtcNow;
         }
         public void Reprogramar(
+            Guid estadoCitaId,
             DateOnly fecha,
             TimeOnly horaInicio,
             TimeOnly horaFin,
-            string observaciones)
+            string? observaciones)
         {
+            EstadoCitaId = estadoCitaId;
             Fecha = fecha;
             HoraInicio = horaInicio;
             HoraFin = horaFin;
             Observaciones = observaciones;
         }
+
         public void Cancelar(
             Guid estadoCanceladaId,
             string motivo,
-            Guid usuarioId)
+            Guid? usuarioId)
         {
             EstadoCitaId = estadoCanceladaId;
             MotivoCancelacion = motivo;
             UsuarioCancelacionId = usuarioId;
             FechaCancelacion = DateTime.UtcNow;
+        }
+
+        public void CambiarEstado(Guid estadoCitaId)
+        {
+            EstadoCitaId = estadoCitaId;
+        }
+
+        public void MarcarNoAsistio(Guid estadoNoAsistioId)
+        {
+            EstadoCitaId = estadoNoAsistioId;
         }
     }
 }

@@ -52,7 +52,6 @@ public sealed class ResetPasswordUseCase
             ipSolicitud: token.IpSolicitud);
 
         usuario.Update(
-            empleadoId: usuario.EmpleadoId,
             rolId: usuario.RolId,
             username: usuario.Username,
             email: usuario.Email,

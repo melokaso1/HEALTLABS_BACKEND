@@ -1,5 +1,4 @@
-﻿using Application.DTOs.TipoDocumento;
-using Application.DTOs.Tratamiento;
+﻿using Application.DTOs.Tratamiento;
 using Domain.Entities;
 using Domain.Interfaces;
 
@@ -16,20 +15,11 @@ namespace Application.UseCases.Tratamiento
 
         public async Task ExecuteAsync(Guid id, UpdateTratamientoDto dto)
         {
-            var tratamiento = await _repo.GetEntityByIdAsync(id);
+            var tratamiento = await _repo.GetEntityByIdAsync(id)
+                ?? throw new ArgumentException("No Existe");
 
-            if (tratamiento == null)
-            {
-                throw new ArgumentException("No Existe");
-            }
-
-            tratamiento.Codigo = dto.Codigo;
-            tratamiento.Nombre = dto.Nombre;
-            tratamiento.Descripcion = dto.Descripcion;
-            tratamiento.Activo = dto.Activo;
-
+            tratamiento.Update(dto.Nombre, dto.Descripcion, dto.Activo);
             await _repo.UpdateAsync(tratamiento);
-
         }
     }
 }

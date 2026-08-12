@@ -18,7 +18,7 @@ namespace Application.UseCases.Permiso
             var entity = await _repo.GetEntityByIdAsync(id)
                 ?? throw new KeyNotFoundException("No Existe");
 
-            entity.Update(dto.Codigo, dto.Modulo, dto.Descripcion);
+            entity.Update(dto.Modulo, dto.Descripcion);
             await _repo.UpdateAsync(entity);
         }
     }

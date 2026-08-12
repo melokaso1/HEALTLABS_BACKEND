@@ -8,7 +8,7 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Admin)]
+[Authorize]
 public sealed class HorariosController : ControllerBase
 {
     private readonly GetAllHorarioUseCase _getAll;
@@ -46,6 +46,7 @@ public sealed class HorariosController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Create([FromBody] CreateHorarioDto request)
     {
         try
@@ -57,6 +58,7 @@ public sealed class HorariosController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateHorarioDto request)
     {
         try
@@ -69,6 +71,7 @@ public sealed class HorariosController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Delete(Guid id)
     {
         try

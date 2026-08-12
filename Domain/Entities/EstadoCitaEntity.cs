@@ -15,7 +15,7 @@ namespace Domain.Entities
             Descripcion = descripcion;
         }
 
-        public void Update(string codigo, string? descripcion)
+        public void Update(string? descripcion)
         {
             Descripcion = descripcion;
         }
