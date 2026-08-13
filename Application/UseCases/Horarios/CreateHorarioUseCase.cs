@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Horario;
+﻿using Application.Common;
+using Application.DTOs.Horario;
 using Domain.Entities;
 using Domain.Interfaces;
 
@@ -15,6 +16,12 @@ namespace Application.UseCases.Horarios
 
         public async Task<HorarioEntity> ExecuteAsync(CreateHorarioDto dto)
         {
+            TimePrecision.EnsureHhMm(
+                ("HoraEntrada", dto.HoraEntrada),
+                ("HoraSalida", dto.HoraSalida),
+                ("SalidaAlmuerzo", dto.SalidaAlmuerzo),
+                ("RetornoActividades", dto.RetornoActividades));
+
             if (await _repo.AnyAsync(h => h.MedicoId == dto.MedicoId))
                 throw new InvalidOperationException("El médico ya tiene una jornada configurada.");
 

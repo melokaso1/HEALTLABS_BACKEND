@@ -1,7 +1,9 @@
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Api.Middlewares;
+using Api.Serialization;
 using Application;
 using DotNetEnv;
 using Infrastructure;
@@ -33,7 +35,10 @@ var jwtAudience = builder.Configuration["JWT:Audience"]
 
 builder.Services.AddControllers()
     .AddJsonOptions(o =>
-        o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+    {
+        o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        o.JsonSerializerOptions.Converters.Add(new TimeOnlyHhMmJsonConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -41,6 +46,16 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "HealtLab API",
         Version = "v1"
+    });
+
+    // Documenta TimeOnly como HH:mm (sin segundos).
+    options.MapType<TimeOnly>(() => new OpenApiSchema
+    {
+        Type = JsonSchemaType.String,
+        Format = "HH:mm",
+        Pattern = @"^([01]\d|2[0-3]):[0-5]\d$",
+        Example = JsonValue.Create("08:30"),
+        Description = "Hora en formato HH:mm (sin segundos ni fracciones)."
     });
 
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
