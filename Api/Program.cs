@@ -62,9 +62,10 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
-        policy.AllowAnyHeader()
+        policy.SetIsOriginAllowed(_ => true)
+            .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowAnyOrigin());
+            .AllowCredentials());
 });
 
 builder.Services.AddApplication();
