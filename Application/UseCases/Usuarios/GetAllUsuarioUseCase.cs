@@ -1,6 +1,5 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using Domain.Interfaces;
-
 
 namespace Application.UseCases.Usuarios
 {
@@ -19,4 +18,3 @@ namespace Application.UseCases.Usuarios
         }
     }
 }
-

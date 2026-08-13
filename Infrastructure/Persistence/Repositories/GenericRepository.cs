@@ -44,6 +44,54 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
 
     public virtual async Task<IEnumerable<TEntity>> GetAllEntitiesAsync()
     {
+        if (typeof(TEntity) == typeof(Domain.Entities.MedicoEntity))
+        {
+            return (IEnumerable<TEntity>)await Context.Medicos
+                .Include(m => m.Empleado!)
+                    .ThenInclude(e => e.Persona!)
+                .Include(m => m.Especialidades!)
+                    .ThenInclude(me => me.Especialidad!)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        if (typeof(TEntity) == typeof(Domain.Entities.PacienteEntity))
+        {
+            return (IEnumerable<TEntity>)await Context.Pacientes
+                .Include(p => p.Persona!)
+                    .ThenInclude(pers => pers.TipoDocumento!)
+                .Include(p => p.Persona!)
+                    .ThenInclude(pers => pers.Sexo!)
+                .Include(p => p.Persona!)
+                    .ThenInclude(pers => pers.Telefonos!)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        if (typeof(TEntity) == typeof(Domain.Entities.UsuarioEntity))
+        {
+            return (IEnumerable<TEntity>)await Context.Usuarios
+                .Include(u => u.Empleado!)
+                    .ThenInclude(e => e.Persona!)
+                .Include(u => u.Rol!)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        if (typeof(TEntity) == typeof(Domain.Entities.CitaEntity))
+        {
+            return (IEnumerable<TEntity>)await Context.Citas
+                .Include(c => c.Paciente!)
+                    .ThenInclude(p => p.Persona!)
+                .Include(c => c.Medico!)
+                    .ThenInclude(m => m.Empleado!)
+                        .ThenInclude(e => e.Persona!)
+                .Include(c => c.EstadoCita!)
+                .Include(c => c.TipoCita!)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
         return await DbSet.AsNoTracking().ToListAsync();
     }
 

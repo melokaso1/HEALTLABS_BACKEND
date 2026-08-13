@@ -16,19 +16,22 @@ public sealed class AuthController : ControllerBase
     private readonly LogoutUseCase _logout;
     private readonly SolicitarRecuperacionUseCase _solicitarRecuperacion;
     private readonly ResetPasswordUseCase _resetPassword;
+    private readonly CambiarPasswordUseCase _cambiarPassword;
 
     public AuthController(
         LoginUseCase login,
         RefreshTokenUseCase refresh,
         LogoutUseCase logout,
         SolicitarRecuperacionUseCase solicitarRecuperacion,
-        ResetPasswordUseCase resetPassword)
+        ResetPasswordUseCase resetPassword,
+        CambiarPasswordUseCase cambiarPassword)
     {
         _login = login;
         _refresh = refresh;
         _logout = logout;
         _solicitarRecuperacion = solicitarRecuperacion;
         _resetPassword = resetPassword;
+        _cambiarPassword = cambiarPassword;
     }
 
     [HttpPost("login")]
@@ -69,6 +72,22 @@ public sealed class AuthController : ControllerBase
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto request)
     {
         var result = await _resetPassword.ExecuteAsync(request);
+        if (!result.Succeeded)
+            return StatusCode(result.StatusCode, result.Error);
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost("cambiar-password")]
+    [Authorize]
+    public async Task<IActionResult> CambiarPassword([FromBody] CambiarPasswordDto request)
+    {
+        var identifier = User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? User.FindFirstValue(ClaimTypes.Name)
+            ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+            ?? string.Empty;
+
+        var result = await _cambiarPassword.ExecuteAsync(identifier, request);
         if (!result.Succeeded)
             return StatusCode(result.StatusCode, result.Error);
 
