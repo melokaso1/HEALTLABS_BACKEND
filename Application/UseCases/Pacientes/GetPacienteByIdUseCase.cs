@@ -1,22 +1,17 @@
-﻿using Domain.Entities;
+﻿using Application.DTOs.Paciente;
 using Domain.Interfaces;
 
-namespace Application.UseCases.Pacientes
+namespace Application.UseCases.Pacientes;
+
+public sealed class GetPacienteByIdUseCase
 {
-    public class GetPacienteByIdUseCase
+    private readonly IPacienteRepository _repo;
+
+    public GetPacienteByIdUseCase(IPacienteRepository repo) => _repo = repo;
+
+    public async Task<PacienteResponseDto?> ExecuteAsync(Guid id)
     {
-        private readonly IGenericRepository<PacienteEntity> _repo;
-
-        public GetPacienteByIdUseCase(IGenericRepository<PacienteEntity> repo)
-        {
-            _repo = repo;
-        }
-
-        public async Task<PacienteEntity> ExecuteAsync(Guid id)
-        {
-            var entity = await _repo.GetEntityByIdAsync(id)
-                ?? throw new KeyNotFoundException("El paciente no existe.");
-            return entity;
-        }
+        var entity = await _repo.GetByIdWithPersonaAsync(id);
+        return entity is null ? null : PacienteResponseDto.FromEntity(entity);
     }
 }

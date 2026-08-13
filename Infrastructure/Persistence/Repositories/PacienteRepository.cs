@@ -11,11 +11,23 @@ public sealed class PacienteRepository : IPacienteRepository
 
     public PacienteRepository(AppDbContext context) => _context = context;
 
+    public async Task<PacienteEntity?> GetByIdWithPersonaAsync(Guid id)
+    {
+        return await WithPersona().FirstOrDefaultAsync(p => p.Id == id);
+    }
+
     public async Task<PacienteEntity?> GetByDocumentoAsync(Guid tipoDocumentoId, string numeroDocumento)
     {
         return await WithPersona()
             .FirstOrDefaultAsync(p => p.Persona!.TipoDocumentoId == tipoDocumentoId
                 && p.Persona.NumeroDocumento == numeroDocumento);
+    }
+
+    public async Task<IReadOnlyList<PacienteEntity>> GetByNumeroDocumentoAsync(string numeroDocumento)
+    {
+        return await WithPersona()
+            .Where(p => p.Persona!.NumeroDocumento == numeroDocumento)
+            .ToListAsync();
     }
 
     public async Task<IEnumerable<PacienteEntity>> GetAllWithPersonaAsync()
