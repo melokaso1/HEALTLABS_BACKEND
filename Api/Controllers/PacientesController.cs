@@ -13,17 +13,35 @@ public sealed class PacientesController : ControllerBase
 {
     private readonly GetAllPacienteUseCase _getAll;
     private readonly GetPacienteByIdUseCase _getById;
+    private readonly BuscarPacientePorDocumentoUseCase _buscarPorDocumento;
     private readonly CreatePacienteUseCase _create;
     private readonly UpdatePacienteUseCase _update;
     private readonly DeletePacienteUseCase _delete;
 
     public PacientesController(GetAllPacienteUseCase getAll, GetPacienteByIdUseCase getById,
-        CreatePacienteUseCase create, UpdatePacienteUseCase update, DeletePacienteUseCase delete)
-        => (_getAll, _getById, _create, _update, _delete) = (getAll, getById, create, update, delete);
+        BuscarPacientePorDocumentoUseCase buscarPorDocumento, CreatePacienteUseCase create,
+        UpdatePacienteUseCase update, DeletePacienteUseCase delete)
+        => (_getAll, _getById, _buscarPorDocumento, _create, _update, _delete)
+            = (getAll, getById, buscarPorDocumento, create, update, delete);
 
     [HttpGet]
     [Authorize(Roles = AppRoles.Staff)]
     public async Task<IActionResult> GetAll() => Ok(await _getAll.ExecuteAsync());
+
+    [HttpGet("buscar")]
+    [Authorize(Roles = AppRoles.Staff)]
+    public async Task<IActionResult> Buscar([FromQuery] Guid tipoDocumento, [FromQuery] string numeroDocumento)
+    {
+        var result = await _buscarPorDocumento.ExecuteAsync(tipoDocumento, numeroDocumento);
+
+        if (result.NoExiste)
+            return NotFound();
+
+        if (result.EstaInactivo)
+            return Conflict("El paciente se encuentra inactivo.");
+
+        return Ok(result.Paciente);
+    }
 
     [HttpGet("{id:guid}")]
     [Authorize(Roles = AppRoles.Staff)]
