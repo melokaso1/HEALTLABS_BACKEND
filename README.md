@@ -112,3 +112,126 @@ Durante el desarrollo, la API superó varias fases de reestructuración técnica
 4. Ejecutar el proyecto: dotnet run
 5. Acceder a la interfaz local de Swagger (ej. [http://localhost:PORT/swagger](https://www.google.com/url?sa=E&q=http://localhost:PORT/swagger)) para evaluar el estado del servicio y probar los endpoints.
 
+
+# revisar
+
+# HealtLab — Sistema de Gestión de Citas Médicas
+
+Backend y motor de base de datos para un sistema de salud integral y simplificado. Permite la administración completa de usuarios, el agendamiento de citas, el control de expedientes clínicos y la gestión de permisos basados en roles (RBAC).
+
+El modelo se construyó bajo un enfoque adaptativo: cumple los requisitos iniciales, pero se mantiene como un esquema flexible sujeto a modificaciones para garantizar la fluidez de los datos en la futura integración con el frontend.
+
+## Stack Tecnológico
+
+- C# / .NET
+- Entity Framework Core (Code-First)
+- PostgreSQL
+- Supabase (base de datos compartida entre el equipo, vía connection pooler)
+- JWT (autenticación y autorización)
+- Swagger / Insomnia (pruebas de API)
+
+## Arquitectura
+
+El proyecto sigue **Clean / Hexagonal Architecture** en cuatro capas, cada una con su propio README detallado para el integrante responsable:
+
+| Capa | Responsable(s) | README | Contenido |
+|------|-----------------|--------|-----------|
+| **Domain** | Todo el equipo (base compartida) | [`Domain/README.md`](./Domain/README.md) | Entidades, value objects e interfaces. Sin dependencias externas. |
+| **Application** | Sahiam | [`Application/README.md`](./Application/README.md) | Use cases, DTOs y reglas de negocio. |
+| **Infrastructure** | Yeison y Santiago | [`Infrastructure/README.md`](./Infrastructure/README.md) | EF Core, repositorios, seeders, JWT, conexión a Supabase. |
+| **Api** | Felipe | [`Api/README.md`](./Api/README.md) | Controllers, middleware, autenticación HTTP, Swagger. |
+
+### Flujo de dependencias
+
+```
+Cliente HTTP
+    │
+    ▼
+Api (controllers, middleware, auth)
+    │  usa
+    ▼
+Application (use cases, DTOs)
+    │  depende de
+    ▼
+Domain (entidades, interfaces) ◄──── implementa ──── Infrastructure (EF Core, repos, JWT, seeders)
+                                                              │
+                                                              ▼
+                                                    PostgreSQL / Supabase
+```
+
+- **Domain** no depende de ninguna otra capa (sin EF, sin ASP.NET). Es el contrato compartido.
+- **Application** solo conoce Domain (entidades e interfaces); no referencia EF Core ni `DbContext`.
+- **Infrastructure** implementa las interfaces de Domain y provee acceso a datos, JWT y seeders.
+- **Api** consume Application a través de use cases; no inyecta `DbContext` ni repositorios directamente.
+
+Cada README de capa detalla convenciones de nombrado, patrones (por ejemplo, `Create{X}UseCase` / `Get{X}ByIdUseCase` en Application), y qué debe cuidar cada integrante al modificar su capa. Antes de tocar código, revisa el README de la capa correspondiente — ahí está el detalle de "qué se hizo" y "qué cuidar" que no se repite aquí.
+
+## Filosofía de Desarrollo e Infraestructura
+
+- **Code-First con Entity Framework:** el esquema de la base de datos se gestiona desde el código en C#. El `DbContext` actúa como puente entre las entidades de Domain y las tablas de PostgreSQL (ver `Infrastructure/EntityConfigurations/`).
+- **Base de datos en la nube:** Supabase (PostgreSQL) centralizado a través de un pooler de conexiones IPv4, para que todo el equipo trabaje sobre el mismo entorno de datos sincronizado. Se usa el **Transaction pooler** (puerto `6543`) para evitar el límite de conexiones (`EMAXCONNSESSION`) del free tier.
+- **Seeders automáticos:** inserción de datos semilla y de prueba al iniciar el proyecto, con validaciones (`AnyAsync`) para evitar duplicados. No requieren migraciones adicionales.
+- **Migraciones y seed al arrancar:** la API ejecuta `MigrateAsync()` y `SeedAllAsync()` automáticamente al iniciar (ver `Api/Program.cs`).
+- **Roles como value object:** los roles del sistema (`Administrador`, `Profesional`, `Recepcionista`) están encapsulados en `RolValueObject` (Domain) y reflejados en `AppRoles` (Api) para `[Authorize(Roles = ...)]`.
+
+## Estructura de la Base de Datos
+
+Diseñada bajo reglas de normalización, dividida en 4 módulos lógicos:
+
+### Módulo 1 — Seguridad, Usuarios y Autenticación
+Control de acceso y auditoría: `usuario`, `rol`, `permiso`, `rol_permiso`, `sesion`, `login_intento`, `token_recuperacion`.
+
+### Módulo 2 — Personas y Perfiles Base
+Información biográfica centralizada: `persona`, catálogos (`tipo_documento`, `sexo`), `persona_direccion`, `persona_telefono`, y perfiles derivados (`empleado`, `paciente`, `medico`, `cargo`).
+
+### Módulo 3 — Agendamiento y Citas
+Operatividad del centro médico: `horario`, `especialidad`, `medico_especialidad`, `cita` (tabla transaccional central), catálogos (`tipo_cita`, `estado_cita`), `cita_historial_estado`.
+
+### Módulo 4 — Atención Clínica y Expediente
+Historial y actos médicos: `antecedente`, `paciente_alergia`, `detalle_cita`, `diagnostico`, `detalle_diagnostico` (CIE-10), `tratamiento`, `tratamiento_posologia`, `atencion_tratamiento`.
+
+## Casos de Uso y Endpoints por Rol
+
+Acceso segmentado por RBAC, aplicado en Api (`[Authorize(Roles = ...)]`) sobre reglas definidas en Application.
+
+**Global:** login, logout, consulta y actualización de perfil propio.
+
+**Administrador:** gestión total de usuarios, pacientes, profesionales y recepcionistas; reportes de citas por profesional y por paciente.
+
+**Recepcionista:** agendar, consultar, cancelar y reprogramar citas; registrar y actualizar pacientes; acceso a tablas auxiliares (antecedentes, direcciones, teléfonos, alergias, historial de estados).
+
+**Profesional (Médico):** lista de pacientes asignados; registro y cierre de historia clínica (detalle de cita, diagnósticos, tratamientos); consulta de citas asignadas e historial médico del paciente.
+
+## Proceso de Depuración y Pruebas
+
+1. **Resolución de compatibilidad:** ajustes en controllers para solucionar problemas de comunicación e integración entre capas.
+2. **Manejo de dependencias:** validación de flujos transaccionales completos y endpoints que dependen de otros para creación/modificación de datos.
+3. **Depuración de errores críticos:** referencia circular en serialización JSON (Error 500) e inserciones fuera de rango en columnas clave.
+
+## Configuración Local
+
+```bash
+# 1. Clonar el repositorio
+git clone <url-del-repo>
+
+# 2. Crear archivo .env en la raíz (o en Api/) con:
+#    ConnectionStrings__DefaultConnection=<cadena Npgsql de Supabase, puerto 6543>
+#    JWT__Key=...
+#    JWT__Issuer=...
+#    JWT__Audience=...
+
+# 3. Aplicar migraciones (opcional: la Api también migra al arrancar)
+dotnet ef database update --project Infrastructure --startup-project Api
+
+# 4. Ejecutar el proyecto
+dotnet run --project Api
+```
+
+Accede a Swagger en `https://localhost:{puerto}/swagger` (solo en Development) para probar los endpoints: `POST /api/Auth/login` → copiar `accessToken` → botón **Authorize** → `Bearer {token}`.
+
+## Convenciones Generales del Equipo
+
+- **No commitear secretos:** JWT y connection string viven en `.env`, nunca en `appsettings.json`.
+- **Un módulo, cuatro capas:** cualquier funcionalidad nueva nace en Domain (entidad/interfaz) → Application (DTOs + use case) → Infrastructure (config EF + migración) → Api (controller + autorización).
+- **Nombrado consistente:** use cases con sufijo `UseCase` (registro automático en DI); roles como `Administrador` / `Profesional` / `Recepcionista` (no usar "Médico" como string suelto).
+- Para el detalle de qué se hizo en la última entrega y qué cuidar por capa, consulta el README correspondiente en la tabla de arquitectura.
