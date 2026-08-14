@@ -41,6 +41,14 @@ public class PersonaSeeder(AppDbContext context)
                 "1000000003",
                 new DateOnly(1995, 3, 10),
                 sexoF?.Id
+            ),
+            new(
+                "Pedro",
+                "Ramírez",
+                tipoCc.Id,
+                "1000000004",
+                new DateOnly(1992, 11, 8),
+                sexoM?.Id
             )
         };
 

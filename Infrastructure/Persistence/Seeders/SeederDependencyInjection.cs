@@ -15,8 +15,12 @@ public static class SeederDependencyInjection
         services.AddScoped<PersonaSeeder>();
         services.AddScoped<EmpleadoSeeder>();
         services.AddScoped<UsuarioSeeder>();
+        services.AddScoped<MedicoSeeder>();
+        services.AddScoped<PacienteSeeder>();
+        services.AddScoped<HorarioSeeder>();
         services.AddScoped<EstadoCitaSeeder>();
         services.AddScoped<TipoCitaSeeder>();
+        services.AddScoped<CitaSeeder>();
         services.AddScoped<IDbSeeder, DbSeeder>();
 
         return services;

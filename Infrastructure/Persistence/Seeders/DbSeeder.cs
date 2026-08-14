@@ -10,8 +10,12 @@ public class DbSeeder(
     PersonaSeeder personaSeeder,
     EmpleadoSeeder empleadoSeeder,
     UsuarioSeeder usuarioSeeder,
+    MedicoSeeder medicoSeeder,
+    PacienteSeeder pacienteSeeder,
+    HorarioSeeder horarioSeeder,
     EstadoCitaSeeder estadoCitaSeeder,
-    TipoCitaSeeder tipoCitaSeeder) : IDbSeeder
+    TipoCitaSeeder tipoCitaSeeder,
+    CitaSeeder citaSeeder) : IDbSeeder
 {
     public async Task SeedAllAsync()
     {
@@ -24,7 +28,11 @@ public class DbSeeder(
         await personaSeeder.SeedAsync();
         await empleadoSeeder.SeedAsync();
         await usuarioSeeder.SeedAsync();
+        await medicoSeeder.SeedAsync();
+        await pacienteSeeder.SeedAsync();
+        await horarioSeeder.SeedAsync();
         await estadoCitaSeeder.SeedAsync();
         await tipoCitaSeeder.SeedAsync();
+        await citaSeeder.SeedAsync();
     }
 }
