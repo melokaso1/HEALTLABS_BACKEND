@@ -1,4 +1,4 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using Domain.Interfaces;
 
 namespace Application.UseCases.Usuarios
@@ -12,8 +12,12 @@ namespace Application.UseCases.Usuarios
         }
         public async Task ExecuteAsync(Guid id)
         {
-
-            await _repo.DeleteAsync(id);
+            var usuario = await _repo.GetEntityByIdAsync(id);
+            if (usuario != null)
+            {
+                usuario.Activo = false;
+                await _repo.UpdateAsync(usuario);
+            }
         }
     }
 }

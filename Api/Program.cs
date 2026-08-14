@@ -86,6 +86,9 @@ builder.Services.AddCors(options =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<Application.Services.IRealtimeNotificationService, Api.Services.RealtimeNotificationService>();
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -104,6 +107,19 @@ builder.Services
             ClockSkew = TimeSpan.FromMinutes(1),
             NameClaimType = ClaimTypes.Name,
             RoleClaimType = ClaimTypes.Role
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -140,6 +156,7 @@ if (!app.Environment.IsDevelopment())
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<Api.Hubs.NotificationHub>("/hubs/notifications");
 app.Run();
 
 static void LoadEnvFile(string contentRoot)

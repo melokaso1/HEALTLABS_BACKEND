@@ -23,6 +23,7 @@ public sealed class CitasController : ControllerBase
     private readonly DeleteCitaUseCase _delete;
     private readonly IGenericRepository<UsuarioEntity> _usuarios;
     private readonly IGenericRepository<MedicoEntity> _medicos;
+    private readonly Application.Services.IRealtimeNotificationService _realtime;
 
     public CitasController(
         GetAllCitaUseCase getAll,
@@ -33,9 +34,10 @@ public sealed class CitasController : ControllerBase
         MarcarNoAsistioCitaUseCase marcarNoAsistio,
         DeleteCitaUseCase delete,
         IGenericRepository<UsuarioEntity> usuarios,
-        IGenericRepository<MedicoEntity> medicos)
-        => (_getAll, _getById, _create, _cancel, _reprogramar, _marcarNoAsistio, _delete, _usuarios, _medicos)
-            = (getAll, getById, create, cancel, reprogramar, marcarNoAsistio, delete, usuarios, medicos);
+        IGenericRepository<MedicoEntity> medicos,
+        Application.Services.IRealtimeNotificationService realtime)
+        => (_getAll, _getById, _create, _cancel, _reprogramar, _marcarNoAsistio, _delete, _usuarios, _medicos, _realtime)
+            = (getAll, getById, create, cancel, reprogramar, marcarNoAsistio, delete, usuarios, medicos, realtime);
 
     [HttpGet]
     [Authorize(Roles = AppRoles.Todos)]
@@ -69,6 +71,8 @@ public sealed class CitasController : ControllerBase
         try
         {
             var entity = await _create.ExecuteAsync(request);
+            await _realtime.BroadcastNotificationAsync("Nueva cita agendada", "Se ha programado una nueva cita médica.", "success");
+            await _realtime.BroadcastActivityAsync("Sistema de Citas", "agendó una nueva cita", entity.Fecha.ToString("yyyy-MM-dd"), "#00A896");
             return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity);
         }
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
@@ -81,6 +85,8 @@ public sealed class CitasController : ControllerBase
         try
         {
             await _cancel.ExecuteAsync(id, request);
+            await _realtime.BroadcastNotificationAsync("Cita cancelada", "Una cita ha sido cancelada.", "warning");
+            await _realtime.BroadcastActivityAsync("Usuario", "canceló una cita médica", id.ToString()[..8], "#EC4899");
             return NoContent();
         }
         catch (KeyNotFoundException) { return NotFound(); }
@@ -94,6 +100,8 @@ public sealed class CitasController : ControllerBase
         try
         {
             await _reprogramar.ExecuteAsync(id, request);
+            await _realtime.BroadcastNotificationAsync("Cita reprogramada", $"La cita ha sido reprogramada para {request.Fecha}.", "info");
+            await _realtime.BroadcastActivityAsync("Usuario", "reprogramó una cita para", request.Fecha.ToString("yyyy-MM-dd"), "#6366F1");
             return NoContent();
         }
         catch (KeyNotFoundException) { return NotFound(); }
@@ -107,6 +115,8 @@ public sealed class CitasController : ControllerBase
         try
         {
             await _marcarNoAsistio.ExecuteAsync(id, request ?? new MarcarNoAsistioCitaDto());
+            await _realtime.BroadcastNotificationAsync("Inasistencia a cita", "El paciente fue marcado como No Asistió.", "warning");
+            await _realtime.BroadcastActivityAsync("Médico/Staff", "marcó inasistencia en cita", id.ToString()[..8], "#EE9B00");
             return NoContent();
         }
         catch (KeyNotFoundException) { return NotFound(); }
