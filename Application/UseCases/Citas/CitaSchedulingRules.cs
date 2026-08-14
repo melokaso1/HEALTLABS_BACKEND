@@ -6,6 +6,9 @@ namespace Application.UseCases.Citas;
 
 public sealed class CitaSchedulingRules
 {
+    /// <summary>Duración máxima habitual de una cita (minutos).</summary>
+    public const int MaxAppointmentDurationMinutes = 30;
+
     private readonly IGenericRepository<CitaEntity> _citas;
     private readonly IGenericRepository<PacienteEntity> _pacientes;
     private readonly IGenericRepository<MedicoEntity> _medicos;
@@ -13,6 +16,29 @@ public sealed class CitaSchedulingRules
     private readonly IGenericRepository<TipoCitaEntity> _tipos;
     private readonly IGenericRepository<UsuarioEntity> _usuarios;
     private readonly IGenericRepository<HorarioEntity> _horarios;
+
+    /// <summary>
+    /// Si falta HoraFin (o no es posterior al inicio), usa inicio + 30 min.
+    /// Si la ventana supera 30 min, la recorta a inicio + 30 min.
+    /// </summary>
+    public static (TimeOnly HoraInicio, TimeOnly HoraFin) NormalizeAppointmentWindow(
+        TimeOnly horaInicio,
+        TimeOnly horaFin)
+    {
+        TimePrecision.EnsureHhMm(
+            ("HoraInicio", horaInicio),
+            ("HoraFin", horaFin));
+
+        var defaultEnd = horaInicio.AddMinutes(MaxAppointmentDurationMinutes);
+
+        if (horaFin <= horaInicio)
+            return (horaInicio, defaultEnd);
+
+        if (horaFin - horaInicio > TimeSpan.FromMinutes(MaxAppointmentDurationMinutes))
+            return (horaInicio, defaultEnd);
+
+        return (horaInicio, horaFin);
+    }
 
     public CitaSchedulingRules(
         IGenericRepository<CitaEntity> citas,

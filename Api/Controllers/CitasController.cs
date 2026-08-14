@@ -166,6 +166,8 @@ public sealed class CitasController : ControllerBase
         try
         {
             await _delete.ExecuteAsync(id, motivoCancelacion);
+            await _realtime.BroadcastNotificationAsync("Cita eliminada", "Una cita médica ha sido eliminada.", "warning");
+            await _realtime.BroadcastActivityAsync("Usuario", "eliminó una cita médica", id.ToString()[..8], "#EF4444");
             return NoContent();
         }
         catch (KeyNotFoundException) { return NotFound(); }

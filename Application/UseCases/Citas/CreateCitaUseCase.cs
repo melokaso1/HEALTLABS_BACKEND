@@ -24,14 +24,18 @@ public sealed class CreateCitaUseCase
     {
         var agendada = await _rules.GetEstadoByCodigoAsync("AGENDADA");
 
+        var (horaInicio, horaFin) = CitaSchedulingRules.NormalizeAppointmentWindow(
+            dto.HoraInicio,
+            dto.HoraFin);
+
         await _rules.ValidateReferencesAsync(
             dto.PacienteId,
             dto.MedicoId,
             agendada.Id,
             dto.TipoCitaId,
             dto.UsuarioCreacionId);
-        await _rules.EnsureWithinHorarioAsync(dto.MedicoId, dto.Fecha, dto.HoraInicio, dto.HoraFin);
-        await _rules.EnsureNoOverlapAsync(dto.MedicoId, dto.Fecha, dto.HoraInicio, dto.HoraFin, excludeCitaId: null);
+        await _rules.EnsureWithinHorarioAsync(dto.MedicoId, dto.Fecha, horaInicio, horaFin);
+        await _rules.EnsureNoOverlapAsync(dto.MedicoId, dto.Fecha, horaInicio, horaFin, excludeCitaId: null);
 
         var cita = new CitaEntity(
             dto.PacienteId,
@@ -39,8 +43,8 @@ public sealed class CreateCitaUseCase
             agendada.Id,
             dto.TipoCitaId,
             dto.Fecha,
-            dto.HoraInicio,
-            dto.HoraFin,
+            horaInicio,
+            horaFin,
             dto.MotivoConsulta,
             dto.Observaciones,
             dto.UsuarioCreacionId);

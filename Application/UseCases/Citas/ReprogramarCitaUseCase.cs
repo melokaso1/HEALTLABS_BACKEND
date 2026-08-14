@@ -29,8 +29,12 @@ public sealed class ReprogramarCitaUseCase
         if (cita.EstadoCitaId == cancelada.Id)
             throw new InvalidOperationException("No se puede reprogramar una cita cancelada.");
 
-        await _rules.EnsureWithinHorarioAsync(cita.MedicoId, dto.Fecha, dto.HoraInicio, dto.HoraFin);
-        await _rules.EnsureNoOverlapAsync(cita.MedicoId, dto.Fecha, dto.HoraInicio, dto.HoraFin, excludeCitaId: id);
+        var (horaInicio, horaFin) = CitaSchedulingRules.NormalizeAppointmentWindow(
+            dto.HoraInicio,
+            dto.HoraFin);
+
+        await _rules.EnsureWithinHorarioAsync(cita.MedicoId, dto.Fecha, horaInicio, horaFin);
+        await _rules.EnsureNoOverlapAsync(cita.MedicoId, dto.Fecha, horaInicio, horaFin, excludeCitaId: id);
 
         var estadoAnterior = cita.EstadoCitaId;
         var agendada = await _rules.GetEstadoByCodigoAsync("AGENDADA");
@@ -38,8 +42,8 @@ public sealed class ReprogramarCitaUseCase
         cita.Reprogramar(
             agendada.Id,
             dto.Fecha,
-            dto.HoraInicio,
-            dto.HoraFin,
+            horaInicio,
+            horaFin,
             dto.Observaciones ?? cita.Observaciones);
 
         await _citas.UpdateAsync(cita);
