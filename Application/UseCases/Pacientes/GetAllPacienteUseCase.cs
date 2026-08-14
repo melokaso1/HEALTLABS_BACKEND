@@ -15,7 +15,10 @@ namespace Application.UseCases.Pacientes
         public async Task<IEnumerable<PacienteResponseDto>> ExecuteAsync()
         {
             var pacientes = await _repo.GetAllWithPersonaAsync();
-            return pacientes.Select(PacienteResponseDto.FromEntity);
+            // Skip orphans (Paciente without Persona) so one bad row does not fail the whole list.
+            return pacientes
+                .Where(p => p.Persona != null)
+                .Select(PacienteResponseDto.FromEntity);
         }
     }
 }

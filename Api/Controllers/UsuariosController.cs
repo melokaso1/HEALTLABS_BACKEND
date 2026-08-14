@@ -3,6 +3,7 @@ using Application.DTOs.Usuario;
 using Application.UseCases.Usuarios;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers;
 
@@ -15,11 +16,18 @@ public sealed class UsuariosController : ControllerBase
     private readonly GetUsuarioByIdUseCase _getById;
     private readonly CreateUsuarioUseCase _create;
     private readonly UpdateUsuarioUseCase _update;
+    private readonly SetUsuarioActivoUseCase _setActivo;
     private readonly DeleteUsuarioUseCase _delete;
 
-    public UsuariosController(GetAllUsuarioUseCase getAll, GetUsuarioByIdUseCase getById,
-        CreateUsuarioUseCase create, UpdateUsuarioUseCase update, DeleteUsuarioUseCase delete)
-        => (_getAll, _getById, _create, _update, _delete) = (getAll, getById, create, update, delete);
+    public UsuariosController(
+        GetAllUsuarioUseCase getAll,
+        GetUsuarioByIdUseCase getById,
+        CreateUsuarioUseCase create,
+        UpdateUsuarioUseCase update,
+        SetUsuarioActivoUseCase setActivo,
+        DeleteUsuarioUseCase delete)
+        => (_getAll, _getById, _create, _update, _setActivo, _delete)
+            = (getAll, getById, create, update, setActivo, delete);
 
     [HttpGet]
     public async Task<IActionResult> GetAll() => Ok(await _getAll.ExecuteAsync());
@@ -27,8 +35,14 @@ public sealed class UsuariosController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var usuario = await _getById.ExecuteAsync(id);
-        return usuario is null ? NotFound() : Ok(usuario);
+        try
+        {
+            return Ok(await _getById.ExecuteAsync(id));
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
     }
 
     [HttpPost]
@@ -52,6 +66,26 @@ public sealed class UsuariosController : ControllerBase
         }
         catch (KeyNotFoundException) { return NotFound(); }
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
+        catch (DbUpdateException ex)
+        {
+            return BadRequest(ex.InnerException?.Message ?? ex.Message);
+        }
+    }
+
+    [HttpPut("{id:guid}/activo")]
+    public async Task<IActionResult> SetActivo(Guid id, [FromBody] SetUsuarioActivoDto request)
+    {
+        try
+        {
+            await _setActivo.ExecuteAsync(id, request);
+            return NoContent();
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
+        catch (DbUpdateException ex)
+        {
+            return BadRequest(ex.InnerException?.Message ?? ex.Message);
+        }
     }
 
     [HttpDelete("{id:guid}")]
@@ -63,6 +97,7 @@ public sealed class UsuariosController : ControllerBase
             await _delete.ExecuteAsync(id);
             return NoContent();
         }
+        catch (KeyNotFoundException) { return NotFound(); }
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 }

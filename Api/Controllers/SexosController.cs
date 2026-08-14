@@ -8,7 +8,7 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = AppRoles.Admin)]
+[Authorize]
 public sealed class SexosController : ControllerBase
 {
     private readonly GetAllSexoUseCase _getAll;
@@ -22,9 +22,11 @@ public sealed class SexosController : ControllerBase
         => (_getAll, _getById, _create, _update, _delete) = (getAll, getById, create, update, delete);
 
     [HttpGet]
+    [Authorize(Roles = AppRoles.Staff)]
     public async Task<IActionResult> GetAll() => Ok(await _getAll.ExecuteAsync());
 
     [HttpGet("{id:guid}")]
+    [Authorize(Roles = AppRoles.Staff)]
     public async Task<IActionResult> GetById(Guid id)
     {
         var entity = await _getById.ExecuteAsync(id);
@@ -32,6 +34,7 @@ public sealed class SexosController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Create([FromBody] CreateSexoDto request)
     {
         try
@@ -43,6 +46,7 @@ public sealed class SexosController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateSexoDto request)
     {
         try
@@ -55,6 +59,7 @@ public sealed class SexosController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> Delete(Guid id)
     {
         try

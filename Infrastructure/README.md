@@ -14,9 +14,10 @@ Implementar el acceso a datos (PostgreSQL/Supabase vía Npgsql), configuraciones
 - **Repositorios:** `GenericRepository<T>` implementa `IGenericRepository<T>`; repos especializados `AntecedentesRepository`, `PersonaDireccionRepository`.
 - **Auth infra:** `JwtTokenGenerator` (`IJwtTokenGenerator`) y `PasswordHasher` (`IPasswordHasher`) en `Infrastructure/Auth/`.
 - **Seeders:** cadena orquestada por `DbSeeder` — Sexo, TipoDocumento, **Rol** (con rename legacy `Médico` → `Profesional`), Permiso, RolPermiso, Cargo, Persona, Empleado, **Usuario** (contraseñas hasheadas con `IPasswordHasher`), EstadoCita, TipoCita.
-- **`DependencyInjection.AddInfrastructure`:** registra `DbContext` con Npgsql, repos, JWT/hasher como Singleton, y `AddPersistenceSeeders()`.
+- **`DependencyInjection.AddInfrastructure`:** registra `AppDbContext` **Scoped** con Npgsql (nunca Singleton), repos Scoped, JWT/hasher Singleton, y `AddPersistenceSeeders()`.
+- **Pool Npgsql acotado:** `NormalizeNpgsqlConnectionString` fuerza `Pooling=true`, `Maximum Pool Size≤10` y, en puerto `6543`, `Max Auto Prepare=0` (Transaction pooler).
 - **Connection string desde `.env`:** `ConnectionStrings__DefaultConnection` (Supabase/Postgres); no guardar secretos en `appsettings.json`.
-- **Migrate + seed al arrancar:** la Api ejecuta `MigrateAsync()` y `SeedAllAsync()` al iniciar (ver `Api/Program.cs`).
+- **Migrate + seed al arrancar:** la Api ejecuta `MigrateAsync()` y `SeedAllAsync()` al iniciar (ver `Api/Program.cs`) en un `IServiceScope` que se dispone al terminar.
 
 ## Relación con otras capas
 
@@ -35,6 +36,12 @@ Application (use case) → Domain (IGenericRepository, IJwtTokenGenerator) ← I
 1. **Variables de entorno obligatorias** en `.env` (raíz del repo o carpeta Api):
    - `ConnectionStrings__DefaultConnection` — cadena Npgsql hacia Supabase/Postgres
    - `JWT__Key`, `JWT__Issuer`, `JWT__Audience` (opcional: `JWT__DurationInMinutes`, `JWT__RefreshDurationInDays`)
+1b. **Supabase pooler (evitar `EMAXCONNSESSION`):**
+   - **Recomendado (API):** Transaction pooler — host `*.pooler.supabase.com`, **puerto `6543`**, `Pooling=true`.
+   - **Evitar para carga concurrente:** Session pooler / puerto `5432` en free tier (`pool_size` ≈ 15) — si lo usas, mantén `Maximum Pool Size` bajo (5–10) y pocas instancias de la API.
+   - Parámetros sugeridos (sin password):  
+     `Host=YOUR_PROJECT.pooler.supabase.com;Port=6543;Database=postgres;Username=postgres.YOUR_REF;SSL Mode=Require;Pooling=true;Maximum Pool Size=10;Timeout=15;`  
+     En `6543` el código ya aplica `Max Auto Prepare=0`.
 2. **Nueva entidad:** agregar `DbSet` en `AppDbContext`, crear `*Configuration.cs`, generar migración, no olvidar orden en seeders si aplica.
 3. **Migraciones:** desde la raíz del repo:
    ```bash

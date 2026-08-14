@@ -18,7 +18,7 @@ namespace Application.UseCases.Pacientes
             var paciente = await _repo.GetEntityByIdAsync(id)
                 ?? throw new KeyNotFoundException("No Existe");
 
-            paciente.Update(dto.Activo);
+            paciente.Update(dto.Activo, dto.TipoSangre);
             await _repo.UpdateAsync(paciente);
         }
     }

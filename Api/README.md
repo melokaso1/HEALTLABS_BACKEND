@@ -34,6 +34,7 @@ Cliente HTTP → Api (controllers, middleware, auth) → Application (use cases)
 3. **Mantener controllers delgados:** validación HTTP mínima (fechas, query params); reglas de negocio en use cases.
 4. **Probar en Swagger (Development):** `POST /api/Auth/login` → copiar `accessToken` → botón **Authorize** → `Bearer {token}`.
 5. **No commitear secretos:** JWT y connection string viven en `.env` (variables `JWT__Key`, `JWT__Issuer`, `JWT__Audience`, `ConnectionStrings__DefaultConnection`).
+   - Preferir Supabase **Transaction** pooler (`Port=6543`) con `Pooling=true;Maximum Pool Size=10;Timeout=15;`. Session mode (`5432`) en free tier suele fallar con `EMAXCONNSESSION` (límite ~15).
 6. **Errores de dominio:** preferir que los use cases lancen excepciones conocidas (`KeyNotFoundException`, `InvalidOperationException`) para que el middleware las traduzca; o devolver `UseCaseResult` como en `AuthController`.
 
 ## Archivos clave

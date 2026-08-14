@@ -21,7 +21,8 @@ namespace Application.UseCases.Pacientes
         {
             var paciente = new PacienteEntity(
                                         dto.PersonaId,
-                                        dto.Activo
+                                        dto.Activo,
+                                        dto.TipoSangre
                                         );
 
             return await _repo.AddAsync(paciente);
