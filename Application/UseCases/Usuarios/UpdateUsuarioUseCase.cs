@@ -1,4 +1,4 @@
-﻿using Application.DTOs.Usuario;
+using Application.DTOs.Usuario;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.ValueObjects;
@@ -43,6 +43,10 @@ namespace Application.UseCases.Usuarios
             var passwordHash = usuario.PasswordHash;
             var passwordChangedAt = usuario.PasswordChangedAt;
             var tokenVersion = usuario.TokenVersion;
+
+            var rolId = dto.RolId != Guid.Empty ? dto.RolId : usuario.RolId;
+            var username = !string.IsNullOrWhiteSpace(dto.Username) ? dto.Username : usuario.Username;
+            var email = !string.IsNullOrWhiteSpace(dto.Email) ? dto.Email : usuario.Email;
 
             if (!string.IsNullOrWhiteSpace(dto.Password))
             {
