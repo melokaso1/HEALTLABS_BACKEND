@@ -16,10 +16,23 @@ public class MedicoSeeder(AppDbContext context)
 
         if (empleado is null) return;
 
-        await context.Medicos.AddAsync(new MedicoEntity(
+        var medico = new MedicoEntity(
             empleado.Id,
             "RM-000001",
-            true));
+            true);
+        await context.Medicos.AddAsync(medico);
+        await context.SaveChangesAsync();
+
+        var medicinaGeneral = await context.Especialidades
+            .FirstOrDefaultAsync(e => e.Nombre == "Medicina General");
+        if (medicinaGeneral is null) return;
+
+        var alreadyLinked = await context.MedicosEspecialidad
+            .AnyAsync(me => me.MedicoId == medico.Id && me.EspecialidadId == medicinaGeneral.Id);
+        if (alreadyLinked) return;
+
+        await context.MedicosEspecialidad.AddAsync(
+            new MedicoEspecialidadEntity(medico.Id, medicinaGeneral.Id, principal: true));
         await context.SaveChangesAsync();
     }
 }

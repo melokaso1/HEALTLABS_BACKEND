@@ -7,6 +7,7 @@ public class DbSeeder(
     PermisoSeeder permisoSeeder,
     RolPermisoSeeder rolPermisoSeeder,
     CargoSeeder cargoSeeder,
+    EspecialidadSeeder especialidadSeeder,
     PersonaSeeder personaSeeder,
     EmpleadoSeeder empleadoSeeder,
     UsuarioSeeder usuarioSeeder,
@@ -25,6 +26,7 @@ public class DbSeeder(
         await permisoSeeder.SeedAsync();
         await rolPermisoSeeder.SeedAsync();
         await cargoSeeder.SeedAsync();
+        await especialidadSeeder.SeedAsync();
         await personaSeeder.SeedAsync();
         await empleadoSeeder.SeedAsync();
         await usuarioSeeder.SeedAsync();

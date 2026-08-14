@@ -7,22 +7,22 @@ Backend para un sistema de salud integral y simplificado: usuarios, agendamiento
 - C# / .NET
 - Entity Framework Core (Code-First)
 - PostgreSQL vía Supabase (pooler compartido)
-- JWT + Swagger (Development) / Insomnia
+- JWT + SignalR + Swagger (Development) / Insomnia
 
 ## Arquitectura (Clean Architecture)
 
-| Capa | Responsable | README | Contenido |
-|------|-------------|--------|-----------|
-| **Domain** | Equipo (base) | — | Entidades, value objects, interfaces. Sin dependencias externas. |
-| **Application** | Sahiam | — | Use cases, DTOs, reglas de negocio. |
-| **Infrastructure** | Yeison / Santiago | — | EF Core, repositorios, seeders, JWT, conexión Supabase. |
-| **Api** | Felipe | [`Api/README.md`](./Api/README.md) | Controllers, middleware, auth HTTP, Swagger. |
+| Capa | Responsable | Contenido |
+|------|-------------|-----------|
+| **Domain** | Equipo (base) | Entidades, value objects, interfaces. Sin dependencias externas. |
+| **Application** | Sahiam | Use cases, DTOs, reglas de negocio. |
+| **Infrastructure** | Yeison / Santiago | EF Core, repositorios, seeders, JWT, conexión Supabase. |
+| **Api** | Felipe | Controllers, middleware, auth HTTP, SignalR hub, Swagger. |
 
 ```
-Cliente HTTP
+Cliente HTTP / SignalR
     │
     ▼
-Api (controllers, middleware, auth)
+Api (controllers, middleware, auth, hubs)
     │  usa
     ▼
 Application (use cases, DTOs)
@@ -39,7 +39,7 @@ Domain (entidades, interfaces) ◄──── implementa ──── Infrastru
 - **Infrastructure** implementa interfaces de Domain.
 - **Api** consume Application (use cases); no inyecta `DbContext` ni repos directamente.
 
-Este README es la fuente de verdad para **cómo ejecutar la API**, autenticación, formatos y endpoints principales. El detalle fino de cada capa queda en el código y, para Api, en su README corto.
+Este README es la fuente de verdad para **cómo ejecutar la API**, autenticación, formatos y endpoints principales.
 
 ## Cómo ejecutar
 
@@ -142,6 +142,19 @@ Definidos en Domain (`RolValueObject`) y en Api (`Api/Security/AppRoles.cs`):
 
 **Staff** = Administrador + Recepcionista. El string del claim del médico es **`Profesional`**, no "Médico".
 
+El **Administrador** es personal administrativo (no médico): no crea expediente clínico como Profesional.
+
+## SignalR
+
+Hub de notificaciones en tiempo real:
+
+| | |
+|--|--|
+| Ruta | `/hubs/notifications` |
+| Auth | JWT Bearer; en WebSockets también por query `access_token` (ver `OnMessageReceived` en `Program.cs`) |
+
+El frontend reconecta al hub cuando hay token de sesión (tras login).
+
 ## Formatos de fecha y hora
 
 | Tipo | Formato JSON | Ejemplo |
@@ -177,6 +190,14 @@ Solo en **Development** (`UseSwagger` / `UseSwaggerUI` condicionados al entorno)
 
 Escritura de estos catálogos: solo Administrador.
 
+### Especialidades (Administrador)
+
+Seed (`EspecialidadSeeder`): Medicina General, Cardiología, Pediatría, Ginecología, Dermatología, Ortopedia (solo si la tabla está vacía).
+
+| Método | Ruta | Notas |
+|--------|------|--------|
+| GET / POST | `/api/Especialidades`… | Solo Administrador |
+
 ### Pacientes (Staff; delete solo Admin)
 
 | Método | Ruta | Notas |
@@ -206,16 +227,42 @@ Crea persona (+ teléfono/dirección opcionales) y paciente (`tipoSangre`, `acti
 1. `POST /api/Personas` (Staff) → obtener `id` de persona.
 2. `POST /api/Pacientes` con `{ "personaId": "...", "activo": true, "tipoSangre": "O+" }`.
 
+### Personal / usuarios (solo Administrador) — flujo unificado
+
+El alta de staff (incl. profesionales) va por **`POST /api/Usuarios/completo`**: crea Persona + Empleado + Usuario y, si el rol es Profesional, también Medico + especialidad.
+
+| Método | Ruta | Notas |
+|--------|------|--------|
+| GET/POST/PUT/DELETE | `/api/Usuarios`… | CRUD de usuarios |
+| POST | `/api/Usuarios/completo` | Alta unificada de personal (recomendado) |
+| PUT | `/api/Usuarios/{id}/activo` | Body: `{ "activo": true \| false }` |
+
+#### `POST /api/Usuarios/completo` (`CreateUsuarioCompletoDto`)
+
+Campos principales: `persona`, `rolId`, `username`, `email`, `password`, `activo`, `fechaIngreso`, `telefono`, `direccion`, `ciudad`, `registroProfesional`, `especialidadId`.
+
+Reglas por rol:
+
+| Rol | Teléfono / dirección | Licencia (`registroProfesional`) + `especialidadId` | Crea `Medico` |
+|-----|----------------------|-----------------------------------------------------|---------------|
+| Administrador | Opcionales | No | No |
+| Recepcionista | **Obligatorios** | No | No |
+| Profesional | **Obligatorios** | **Obligatorios** | Sí (+ `medico_especialidad`) |
+
 ### Médicos
 
 | Método | Ruta | Roles |
 |--------|------|--------|
 | GET | `/api/Medicos`, `/api/Medicos/{id}` | Todos |
-| POST | `/api/Medicos/completo` | Admin — persona + empleado + médico (+ especialidad opcional) |
-| POST | `/api/Medicos` | Admin — solo con `empleadoId` existente |
+| POST | `/api/Medicos` | Admin — solo con `empleadoId` existente (caso avanzado) |
+| POST | `/api/Medicos/completo` | **No usar** — responde 400 y redirige al flujo unificado (`POST /api/Usuarios/completo`) |
 | PUT / DELETE | `/api/Medicos/{id}` | Admin |
 
+> No hay un camino “médico huérfano” vía `Medicos/completo`. Todo profesional nuevo debe tener cuenta de usuario.
+
 ### Citas
+
+Duración máxima: **30 minutos** (`CitaSchedulingRules.MaxAppointmentDurationMinutes`). Si falta `horaFin` o la ventana supera 30 min, se normaliza a inicio + 30 min.
 
 | Método | Ruta | Roles |
 |--------|------|--------|
@@ -229,13 +276,6 @@ Crea persona (+ teléfono/dirección opcionales) y paciente (`tipoSangre`, `acti
 
 Horas de cita: `horaInicio` / `horaFin` en **HH:mm**; `fecha` en **YYYY-MM-DD**.
 
-### Usuarios (solo Administrador)
-
-| Método | Ruta | Notas |
-|--------|------|--------|
-| GET/POST/PUT/DELETE | `/api/Usuarios`… | CRUD |
-| PUT | `/api/Usuarios/{id}/activo` | Body: `{ "activo": true \| false }` |
-
 ### Reportes (Staff)
 
 - `GET /api/Reportes/citas?desde=&hasta=&medicoId=`
@@ -244,7 +284,7 @@ Horas de cita: `horaInicio` / `horaFin` en **HH:mm**; `fecha` en **YYYY-MM-DD**.
 
 ### Resumen por perfil
 
-**Administrador:** usuarios (incl. activo/inactivo), médicos completo, pacientes, citas, catálogos, reportes, empleados, roles/permisos.
+**Administrador:** usuarios (incl. alta completa y activo/inactivo), especialidades, médicos (lectura/CRUD acotado), pacientes, citas, catálogos, reportes, empleados, roles/permisos. No es un doctor clínico.
 
 **Recepcionista (Staff):** pacientes (listar, buscar, completo), citas (agendar/cancelar/reprogramar), personas/teléfonos/direcciones, antecedentes/alergias (escritura), Sexos y TiposDocumento (lectura), reportes.
 
@@ -263,4 +303,5 @@ Horas de cita: `horaInicio` / `horaFin` en **HH:mm**; `fecha` en **YYYY-MM-DD**.
 - Funcionalidad nueva: Domain → Application → Infrastructure → Api (autorización con `AppRoles`).
 - Use cases con sufijo `UseCase` (registro en DI de Application).
 - Roles en strings: `Administrador` / `Profesional` / `Recepcionista`.
+- Alta de personal: `POST /api/Usuarios/completo` (no `POST /api/Medicos/completo`).
 - SignalR: hub en `/hubs/notifications` (token también por query `access_token` en hubs).
