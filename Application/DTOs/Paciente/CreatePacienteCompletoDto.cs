@@ -9,6 +9,7 @@ public sealed class CreatePacienteCompletoDto
     public string? TipoTelefono { get; set; }
     public string? Direccion { get; set; }
     public string? Ciudad { get; set; }
+    public string? Email { get; set; }
     public string? TipoSangre { get; set; }
     public bool Activo { get; set; } = true;
 }

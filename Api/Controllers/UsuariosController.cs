@@ -1,5 +1,6 @@
 using Api.Security;
 using Application.DTOs.Usuario;
+using Application.Exceptions;
 using Application.UseCases.Usuarios;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,7 @@ public sealed class UsuariosController : ControllerBase
     private readonly GetAllUsuarioUseCase _getAll;
     private readonly GetUsuarioByIdUseCase _getById;
     private readonly CreateUsuarioUseCase _create;
+    private readonly CreateUsuarioCompletoUseCase _createCompleto;
     private readonly UpdateUsuarioUseCase _update;
     private readonly SetUsuarioActivoUseCase _setActivo;
     private readonly DeleteUsuarioUseCase _delete;
@@ -23,11 +25,12 @@ public sealed class UsuariosController : ControllerBase
         GetAllUsuarioUseCase getAll,
         GetUsuarioByIdUseCase getById,
         CreateUsuarioUseCase create,
+        CreateUsuarioCompletoUseCase createCompleto,
         UpdateUsuarioUseCase update,
         SetUsuarioActivoUseCase setActivo,
         DeleteUsuarioUseCase delete)
-        => (_getAll, _getById, _create, _update, _setActivo, _delete)
-            = (getAll, getById, create, update, setActivo, delete);
+        => (_getAll, _getById, _create, _createCompleto, _update, _setActivo, _delete)
+            = (getAll, getById, create, createCompleto, update, setActivo, delete);
 
     [HttpGet]
     public async Task<IActionResult> GetAll() => Ok(await _getAll.ExecuteAsync());
@@ -54,6 +57,19 @@ public sealed class UsuariosController : ControllerBase
             return CreatedAtAction(nameof(GetById), new { id = usuario.UsuarioId }, usuario);
         }
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
+    }
+
+    [HttpPost("completo")]
+    public async Task<IActionResult> CreateCompleto([FromBody] CreateUsuarioCompletoDto request)
+    {
+        try
+        {
+            var usuario = await _createCompleto.ExecuteAsync(request);
+            return CreatedAtAction(nameof(GetById), new { id = usuario.UsuarioId }, usuario);
+        }
+        catch (DuplicateDocumentException ex) { return Conflict(ex.Message); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
+        catch (ArgumentException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpPut("{id:guid}")]

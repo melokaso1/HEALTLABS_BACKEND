@@ -14,5 +14,6 @@ namespace Application.DTOs.Paciente
         public string? TipoTelefono { get; set; }
         public string? Direccion { get; set; }
         public string? Ciudad { get; set; }
+        public string? Email { get; set; }
     }
 }

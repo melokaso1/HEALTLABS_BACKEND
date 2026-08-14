@@ -66,6 +66,11 @@ namespace Application.UseCases.Pacientes
                     dto.SexoId ?? persona.SexoId);
             }
 
+            if (dto.Email is not null)
+                persona.Email = string.IsNullOrWhiteSpace(dto.Email)
+                    ? null
+                    : EmailValueObject.Create(dto.Email).Value;
+
             if (!string.IsNullOrWhiteSpace(dto.Telefono))
             {
                 var telefono = persona.Telefonos.FirstOrDefault(t => t.Principal)

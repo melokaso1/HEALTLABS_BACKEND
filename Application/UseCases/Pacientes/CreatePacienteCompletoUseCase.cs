@@ -23,6 +23,9 @@ public sealed class CreatePacienteCompletoUseCase
             documento,
             dto.Persona.FechaNacimiento,
             dto.Persona.SexoId);
+        persona.Email = string.IsNullOrWhiteSpace(dto.Email)
+            ? null
+            : EmailValueObject.Create(dto.Email).Value;
         var paciente = new PacienteEntity(persona.Id, dto.Activo, dto.TipoSangre);
         PersonaTelefonoEntity? telefono = !string.IsNullOrWhiteSpace(dto.Telefono)
             ? new PersonaTelefonoEntity(persona.Id, dto.Telefono, dto.TipoTelefono, true)

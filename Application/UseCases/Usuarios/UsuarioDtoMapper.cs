@@ -9,6 +9,7 @@ internal static class UsuarioDtoMapper
     {
         UsuarioId = usuario.Id,
         EmpleadoId = usuario.EmpleadoId,
+        MedicoId = usuario.Empleado?.Medico?.Id,
         RolId = usuario.RolId,
         Username = usuario.Username,
         Email = usuario.Email,

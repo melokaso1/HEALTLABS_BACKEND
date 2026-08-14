@@ -38,6 +38,7 @@ public sealed class PersonaResumenDto
     public int? Edad { get; init; }
     public Guid? SexoId { get; init; }
     public string? Sexo { get; init; }
+    public string? Email { get; init; }
     public string? Telefono { get; init; }
     public string? TipoTelefono { get; init; }
     public string? Direccion { get; init; }
@@ -62,6 +63,7 @@ public sealed class PersonaResumenDto
             Edad = CalcularEdad(persona.FechaNacimiento),
             SexoId = persona.SexoId,
             Sexo = persona.Sexo?.Nombre,
+            Email = persona.Email,
             Telefono = telefonoPrincipal?.Telefono,
             TipoTelefono = telefonoPrincipal?.Tipo,
             Direccion = direccionPrincipal?.Direccion,

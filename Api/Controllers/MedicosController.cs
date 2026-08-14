@@ -55,18 +55,8 @@ public sealed class MedicosController : ControllerBase
     [Authorize(Roles = AppRoles.Admin)]
     public async Task<IActionResult> CreateCompleto([FromBody] CreateMedicoCompletoDto request)
     {
-        try
-        {
-            var entity = await _createCompleto.ExecuteAsync(request);
-            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity);
-        }
-        catch (DuplicateDocumentException ex) { return Conflict(ex.Message); }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
-        {
-            return Conflict("Ya existe una persona registrada con ese tipo y número de documento.");
-        }
-        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
-        catch (ArgumentException ex) { return BadRequest(ex.Message); }
+        return BadRequest(
+            "El alta de médicos requiere una cuenta de usuario. Use POST /api/Usuarios/completo.");
     }
 
     [HttpPut("{id:guid}")]

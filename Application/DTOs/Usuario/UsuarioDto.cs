@@ -4,6 +4,7 @@ namespace Application.DTOs.Usuario
     {
         public Guid UsuarioId { get; set; }
         public Guid EmpleadoId { get; set; }
+        public Guid? MedicoId { get; set; }
         public Guid RolId { get; set; }
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;

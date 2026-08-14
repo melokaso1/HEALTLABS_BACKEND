@@ -13,6 +13,7 @@ public class PersonaConfiguration : IEntityTypeConfiguration<PersonaEntity>
 
         builder.Property(x => x.Nombre).IsRequired().HasMaxLength(100);
         builder.Property(x => x.Apellido).IsRequired().HasMaxLength(100);
+        builder.Property(x => x.Email).HasMaxLength(150);
         builder.Property(x => x.TipoDocumentoId).IsRequired();
         builder.Property(x => x.NumeroDocumento).IsRequired().HasMaxLength(30);
         builder.Property(x => x.FechaNacimiento);
