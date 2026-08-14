@@ -51,7 +51,7 @@ public sealed class UsuariosController : ControllerBase
         try
         {
             var usuario = await _create.ExecuteAsync(request);
-            return CreatedAtAction(nameof(GetById), new { id = usuario.Id }, usuario);
+            return CreatedAtAction(nameof(GetById), new { id = usuario.UsuarioId }, usuario);
         }
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
@@ -93,7 +93,7 @@ public sealed class UsuariosController : ControllerBase
     {
         try
         {
-            if (await _getById.ExecuteAsync(id) is null) return NotFound();
+            await _getById.ExecuteAsync(id);
             await _delete.ExecuteAsync(id);
             return NoContent();
         }

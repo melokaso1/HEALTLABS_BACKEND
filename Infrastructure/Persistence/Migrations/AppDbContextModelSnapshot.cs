@@ -341,10 +341,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<Guid>("PersonaId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("TipoSangre")
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CargoId");
@@ -677,8 +673,8 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Property<string>("NumeroDocumento")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
 
                     b.Property<Guid?>("SexoId")
                         .HasColumnType("uuid");

@@ -2,6 +2,7 @@
 using Application.DTOs.Persona;
 using Domain.Entities;
 using Domain.Interfaces;
+using Domain.ValueObjects;
 
 namespace Application.UseCases.Personas
 {
@@ -27,7 +28,7 @@ namespace Application.UseCases.Personas
                                         dto.Nombre,
                                         dto.Apellido,
                                         dto.TipoDocumentoId,
-                                        dto.NumeroDocumento,
+                                        NumeroDocumentoValueObject.Create(dto.NumeroDocumento).Value,
                                         dto.FechaNacimiento,
                                         dto.SexoId
                                         );

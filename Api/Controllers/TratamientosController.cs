@@ -64,7 +64,6 @@ public sealed class TratamientosController : ControllerBase
     {
         try
         {
-            if (await _getById.ExecuteAsync(id) is null) return NotFound();
             await _delete.ExecuteAsync(id);
             return NoContent();
         }

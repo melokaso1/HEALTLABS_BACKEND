@@ -41,7 +41,14 @@ public sealed class ResetPasswordUseCase
         if (usuario is null)
             return UseCaseResult<object>.Fail("Usuario no encontrado.");
 
-        PasswordValueObject.Create(request.NewPassword);
+        try
+        {
+            PasswordValueObject.Create(request.NewPassword);
+        }
+        catch (ArgumentException ex)
+        {
+            return UseCaseResult<object>.Fail(ex.Message, 400);
+        }
 
         var ahora = DateTime.UtcNow;
         token.Update(

@@ -49,7 +49,7 @@ public sealed class CambiarPasswordUseCase
         {
             PasswordValueObject.Create(request.NewPassword);
         }
-        catch (InvalidOperationException ex)
+        catch (ArgumentException ex)
         {
             return UseCaseResult<object>.Fail(ex.Message, 400);
         }

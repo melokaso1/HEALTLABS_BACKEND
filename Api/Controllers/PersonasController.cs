@@ -3,6 +3,8 @@ using Application.DTOs.Persona;
 using Application.UseCases.Personas;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Api.Controllers;
 
@@ -43,6 +45,11 @@ public sealed class PersonasController : ControllerBase
             return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity);
         }
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
+        catch (ArgumentException ex) { return BadRequest(ex.Message); }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            return Conflict("Ya existe una persona registrada con ese tipo y número de documento.");
+        }
     }
 
     [HttpPut("{id:guid}")]
@@ -64,7 +71,6 @@ public sealed class PersonasController : ControllerBase
     {
         try
         {
-            if (await _getById.ExecuteAsync(id) is null) return NotFound();
             await _delete.ExecuteAsync(id);
             return NoContent();
         }

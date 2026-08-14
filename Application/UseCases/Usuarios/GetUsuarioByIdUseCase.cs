@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Application.DTOs.Usuario;
+using Domain.Entities;
 using Domain.Interfaces;
 
 namespace Application.UseCases.Usuarios
@@ -12,11 +13,11 @@ namespace Application.UseCases.Usuarios
             _repo = repo;
         }
 
-        public async Task<UsuarioEntity> ExecuteAsync(Guid id)
+        public async Task<UsuarioDto> ExecuteAsync(Guid id)
         {
             var entity = await _repo.GetEntityByIdAsync(id)
                 ?? throw new KeyNotFoundException("El usuario no existe.");
-            return entity;
+            return UsuarioDtoMapper.ToDto(entity);
         }
     }
 }

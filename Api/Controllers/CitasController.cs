@@ -41,7 +41,7 @@ public sealed class CitasController : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = AppRoles.Todos)]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] DateOnly? desde = null, [FromQuery] DateOnly? hasta = null)
     {
         Guid? medicoId = null;
         if (User.IsInRole(AppRoles.Medico)
@@ -53,7 +53,14 @@ public sealed class CitasController : ControllerBase
                 return Ok(Array.Empty<CitaEntity>());
         }
 
-        return Ok(await _getAll.ExecuteAsync(medicoId));
+        try
+        {
+            return Ok(await _getAll.ExecuteAsync(medicoId, desde, hasta));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpGet("{id:guid}")]

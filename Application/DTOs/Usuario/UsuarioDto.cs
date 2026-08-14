@@ -12,5 +12,7 @@ namespace Application.DTOs.Usuario
         public DateTime? UltimoLogin { get; set; }
         public bool DebeCambiarPassword { get; set; }
         public int TokenVersion { get; set; }
+        public string? NombreCompleto { get; set; }
+        public string? RolNombre { get; set; }
     }
 }

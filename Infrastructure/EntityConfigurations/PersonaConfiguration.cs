@@ -14,7 +14,7 @@ public class PersonaConfiguration : IEntityTypeConfiguration<PersonaEntity>
         builder.Property(x => x.Nombre).IsRequired().HasMaxLength(100);
         builder.Property(x => x.Apellido).IsRequired().HasMaxLength(100);
         builder.Property(x => x.TipoDocumentoId).IsRequired();
-        builder.Property(x => x.NumeroDocumento).IsRequired().HasMaxLength(50);
+        builder.Property(x => x.NumeroDocumento).IsRequired().HasMaxLength(30);
         builder.Property(x => x.FechaNacimiento);
         builder.Property(x => x.SexoId);
         builder.Property(x => x.FechaCreacion).IsRequired();

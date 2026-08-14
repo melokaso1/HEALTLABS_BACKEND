@@ -4,7 +4,7 @@ namespace Domain.ValueObjects;
 
 public sealed record NumeroDocumentoValueObject
 {
-    public const int LongitudMaxima = 50;
+    public const int LongitudMaxima = 30;
 
     private static readonly Regex PatronDocumento = new(
         @"^[A-Z0-9]+$",

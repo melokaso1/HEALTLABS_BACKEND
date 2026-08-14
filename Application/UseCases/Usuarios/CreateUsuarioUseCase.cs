@@ -24,7 +24,7 @@ namespace Application.UseCases.Usuarios
             _passwordHasher = passwordHasher;
         }
 
-        public async Task<UsuarioEntity> ExecuteAsync(CreateUsuarioDto dto)
+        public async Task<UsuarioDto> ExecuteAsync(CreateUsuarioDto dto)
         {
             if (!await _empleados.AnyAsync(e => e.Id == dto.EmpleadoId))
                 throw new InvalidOperationException("El empleado especificado no existe.");
@@ -54,7 +54,8 @@ namespace Application.UseCases.Usuarios
                 null,
                 1);
 
-            return await _repo.AddAsync(usuario);
+            await _repo.AddAsync(usuario);
+            return UsuarioDtoMapper.ToDto(usuario);
         }
     }
 }

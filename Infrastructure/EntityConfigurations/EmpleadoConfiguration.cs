@@ -15,7 +15,6 @@ public class EmpleadoConfiguration : IEntityTypeConfiguration<EmpleadoEntity>
         builder.Property(x => x.FechaIngreso).IsRequired();
         builder.Property(x => x.FechaRetiro);
         builder.Property(x => x.Activo).IsRequired();
-        builder.Property<string>("TipoSangre").HasMaxLength(3);
 
         builder.HasIndex(x => x.PersonaId).IsUnique();
 

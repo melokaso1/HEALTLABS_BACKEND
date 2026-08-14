@@ -32,8 +32,8 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString, npgsql =>
                 npgsql.EnableRetryOnFailure(
-                    maxRetryCount: 3,
-                    maxRetryDelay: TimeSpan.FromSeconds(5),
+                    maxRetryCount: 2,
+                    maxRetryDelay: TimeSpan.FromSeconds(2),
                     errorCodesToAdd: null)));
 
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

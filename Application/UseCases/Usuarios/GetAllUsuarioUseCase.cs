@@ -1,3 +1,4 @@
+using Application.DTOs.Usuario;
 using Domain.Entities;
 using Domain.Interfaces;
 
@@ -12,9 +13,10 @@ namespace Application.UseCases.Usuarios
             _repo = repo;
         }
 
-        public async Task<IEnumerable<UsuarioEntity>> ExecuteAsync()
+        public async Task<IEnumerable<UsuarioDto>> ExecuteAsync()
         {
-            return await _repo.GetAllEntitiesAsync();
+            var usuarios = await _repo.GetAllEntitiesAsync();
+            return usuarios.Select(UsuarioDtoMapper.ToDto);
         }
     }
 }

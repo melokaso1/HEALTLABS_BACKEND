@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260814145114_AddPacienteTipoSangre")]
-    partial class AddPacienteTipoSangre
+    [Migration("20260814154754_ReducePersonaDocumentoLength")]
+    partial class ReducePersonaDocumentoLength
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -676,8 +676,8 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Property<string>("NumeroDocumento")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
 
                     b.Property<Guid?>("SexoId")
                         .HasColumnType("uuid");

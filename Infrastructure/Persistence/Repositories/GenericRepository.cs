@@ -81,13 +81,6 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
         if (typeof(TEntity) == typeof(Domain.Entities.CitaEntity))
         {
             return (IEnumerable<TEntity>)await Context.Citas
-                .Include(c => c.Paciente!)
-                    .ThenInclude(p => p.Persona!)
-                .Include(c => c.Medico!)
-                    .ThenInclude(m => m.Empleado!)
-                        .ThenInclude(e => e.Persona!)
-                .Include(c => c.EstadoCita!)
-                .Include(c => c.TipoCita!)
                 .AsNoTracking()
                 .ToListAsync();
         }
