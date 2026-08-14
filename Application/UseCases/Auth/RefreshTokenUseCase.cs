@@ -10,17 +10,20 @@ public sealed class RefreshTokenUseCase
     private readonly IGenericRepository<SesionEntity> _sesiones;
     private readonly IGenericRepository<UsuarioEntity> _usuarios;
     private readonly IGenericRepository<RolEntity> _roles;
+    private readonly IGenericRepository<MedicoEntity> _medicos;
     private readonly IJwtTokenGenerator _jwt;
 
     public RefreshTokenUseCase(
         IGenericRepository<SesionEntity> sesiones,
         IGenericRepository<UsuarioEntity> usuarios,
         IGenericRepository<RolEntity> roles,
+        IGenericRepository<MedicoEntity> medicos,
         IJwtTokenGenerator jwt)
     {
         _sesiones = sesiones;
         _usuarios = usuarios;
         _roles = roles;
+        _medicos = medicos;
         _jwt = jwt;
     }
 
@@ -74,10 +77,12 @@ public sealed class RefreshTokenUseCase
         await _sesiones.AddAsync(nuevaSesion);
 
         var accessToken = _jwt.GenerateAccessToken(usuario, rolNombre, jti);
+        var medico = await _medicos.FirstOrDefaultAsync(m => m.EmpleadoId == usuario.EmpleadoId);
 
         return UseCaseResult<LoginResponseDto>.Success(new LoginResponseDto
         {
             UsuarioId = usuario.Id,
+            MedicoId = medico?.Id,
             SesionId = nuevaSesion.Id,
             Username = usuario.Username,
             Email = usuario.Email,

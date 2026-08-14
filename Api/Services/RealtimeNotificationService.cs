@@ -9,6 +9,7 @@ public class RealtimeNotificationService : IRealtimeNotificationService
 {
     private readonly IHubContext<NotificationHub> _hubContext;
     private static readonly ConcurrentQueue<object> _recentActivities = new();
+    private static readonly object _recentActivitiesLock = new();
 
     public RealtimeNotificationService(IHubContext<NotificationHub> hubContext)
     {
@@ -43,10 +44,11 @@ public class RealtimeNotificationService : IRealtimeNotificationService
             avatarBg
         };
 
-        _recentActivities.Enqueue(payload);
-        while (_recentActivities.Count > 30)
+        lock (_recentActivitiesLock)
         {
-            _recentActivities.TryDequeue(out _);
+            _recentActivities.Enqueue(payload);
+            while (_recentActivities.Count > 30)
+                _recentActivities.TryDequeue(out _);
         }
 
         await _hubContext.Clients.All.SendAsync("ReceiveActivity", payload);
@@ -54,6 +56,7 @@ public class RealtimeNotificationService : IRealtimeNotificationService
 
     public IEnumerable<object> GetRecentActivities()
     {
-        return _recentActivities.ToArray().Reverse();
+        lock (_recentActivitiesLock)
+            return _recentActivities.ToArray().Reverse().ToArray();
     }
 }

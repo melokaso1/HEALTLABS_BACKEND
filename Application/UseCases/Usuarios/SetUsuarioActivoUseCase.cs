@@ -28,6 +28,10 @@ namespace Application.UseCases.Usuarios
                 bloqueadoHasta = null;
             }
 
+            var tokenVersion = usuario.TokenVersion;
+            if (!dto.Activo && usuario.Activo)
+                tokenVersion++;
+
             usuario.Update(
                 usuario.RolId,
                 usuario.Username,
@@ -39,7 +43,7 @@ namespace Application.UseCases.Usuarios
                 bloqueadoHasta,
                 usuario.DebeCambiarPassword,
                 usuario.PasswordChangedAt,
-                usuario.TokenVersion);
+                tokenVersion);
 
             try
             {

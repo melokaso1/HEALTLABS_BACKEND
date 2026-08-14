@@ -77,6 +77,7 @@ public sealed class CitaSchedulingRules
         var overlap = await _citas.AnyAsync(c =>
             c.MedicoId == medicoId &&
             c.Fecha == fecha &&
+            c.OcupaCupo &&
             (!excludeCitaId.HasValue || c.Id != excludeCitaId.Value) &&
             (canceladaId == null || c.EstadoCitaId != canceladaId) &&
             (noAsistioId == null || c.EstadoCitaId != noAsistioId) &&

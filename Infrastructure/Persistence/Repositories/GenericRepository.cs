@@ -64,6 +64,8 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
                     .ThenInclude(pers => pers.Sexo!)
                 .Include(p => p.Persona!)
                     .ThenInclude(pers => pers.Telefonos!)
+                .Include(p => p.Persona!)
+                    .ThenInclude(pers => pers.Direcciones!)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -81,6 +83,13 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
         if (typeof(TEntity) == typeof(Domain.Entities.CitaEntity))
         {
             return (IEnumerable<TEntity>)await Context.Citas
+                .Include(c => c.Paciente!)
+                    .ThenInclude(p => p.Persona!)
+                .Include(c => c.Medico!)
+                    .ThenInclude(m => m.Empleado!)
+                        .ThenInclude(e => e.Persona!)
+                .Include(c => c.TipoCita!)
+                .Include(c => c.EstadoCita!)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -90,6 +99,23 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
 
     public virtual async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
     {
+        if (typeof(TEntity) == typeof(Domain.Entities.CitaEntity))
+        {
+            var citaPredicate = (Expression<Func<Domain.Entities.CitaEntity, bool>>)(object)predicate;
+
+            return (IEnumerable<TEntity>)await Context.Citas
+                .Include(c => c.Paciente!)
+                    .ThenInclude(p => p.Persona!)
+                .Include(c => c.Medico!)
+                    .ThenInclude(m => m.Empleado!)
+                        .ThenInclude(e => e.Persona!)
+                .Include(c => c.TipoCita!)
+                .Include(c => c.EstadoCita!)
+                .AsNoTracking()
+                .Where(citaPredicate)
+                .ToListAsync();
+        }
+
         return await DbSet.AsNoTracking().Where(predicate).ToListAsync();
     }
 

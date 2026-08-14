@@ -5,6 +5,8 @@ using System.Text.Json.Serialization;
 using Api.Middlewares;
 using Api.Serialization;
 using Application;
+using Domain.Entities;
+using Domain.Interfaces;
 using DotNetEnv;
 using Infrastructure;
 using Infrastructure.Persistence.Context;
@@ -42,6 +44,7 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    options.OperationFilter<AuthorizeOperationFilter>();
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "HealtLab API",
@@ -124,6 +127,25 @@ builder.Services
                     context.Token = accessToken;
                 }
                 return Task.CompletedTask;
+            },
+            OnTokenValidated = async context =>
+            {
+                var userIdClaim = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+                var tokenVersionClaim = context.Principal?.FindFirstValue("ver");
+
+                if (!Guid.TryParse(userIdClaim, out var userId)
+                    || !int.TryParse(tokenVersionClaim, out var tokenVersion))
+                {
+                    context.Fail("TokenInvalidated");
+                    return;
+                }
+
+                var usuarios = context.HttpContext.RequestServices
+                    .GetRequiredService<IGenericRepository<UsuarioEntity>>();
+                var usuario = await usuarios.GetEntityByIdAsync(userId);
+
+                if (usuario is null || !usuario.Activo || usuario.TokenVersion != tokenVersion)
+                    context.Fail("TokenInvalidated");
             }
         };
     });

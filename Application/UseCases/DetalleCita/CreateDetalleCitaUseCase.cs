@@ -31,6 +31,11 @@ public sealed class CreateDetalleCitaUseCase
         var cita = await _citas.GetEntityByIdAsync(dto.CitaId)
             ?? throw new InvalidOperationException("La cita no existe.");
 
+        var cancelada = await _estados.FirstOrDefaultAsync(e => e.Codigo == "CANCELADA");
+        var noAsistio = await _estados.FirstOrDefaultAsync(e => e.Codigo == "NO_ASISTIO");
+        if (cita.EstadoCitaId == cancelada?.Id || cita.EstadoCitaId == noAsistio?.Id)
+            throw new InvalidOperationException("No se puede registrar atención para una cita cancelada o marcada como no asistió.");
+
         if (!await _medicos.AnyAsync(m => m.Id == dto.MedicoId && m.Activo))
             throw new InvalidOperationException("El médico no existe o está inactivo.");
 

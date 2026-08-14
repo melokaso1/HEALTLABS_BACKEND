@@ -12,6 +12,7 @@ public sealed class LoginUseCase
 
     private readonly IGenericRepository<UsuarioEntity> _usuarios;
     private readonly IGenericRepository<RolEntity> _roles;
+    private readonly IGenericRepository<MedicoEntity> _medicos;
     private readonly IGenericRepository<SesionEntity> _sesiones;
     private readonly IGenericRepository<LoginIntentoEntity> _loginIntentos;
     private readonly IPasswordHasher _passwordHasher;
@@ -20,6 +21,7 @@ public sealed class LoginUseCase
     public LoginUseCase(
         IGenericRepository<UsuarioEntity> usuarios,
         IGenericRepository<RolEntity> roles,
+        IGenericRepository<MedicoEntity> medicos,
         IGenericRepository<SesionEntity> sesiones,
         IGenericRepository<LoginIntentoEntity> loginIntentos,
         IPasswordHasher passwordHasher,
@@ -27,6 +29,7 @@ public sealed class LoginUseCase
     {
         _usuarios = usuarios;
         _roles = roles;
+        _medicos = medicos;
         _sesiones = sesiones;
         _loginIntentos = loginIntentos;
         _passwordHasher = passwordHasher;
@@ -103,10 +106,12 @@ public sealed class LoginUseCase
         await _sesiones.AddAsync(sesion);
 
         var accessToken = _jwt.GenerateAccessToken(usuario, rolNombre, jti);
+        var medico = await _medicos.FirstOrDefaultAsync(m => m.EmpleadoId == usuario.EmpleadoId);
 
         return UseCaseResult<LoginResponseDto>.Success(new LoginResponseDto
         {
             UsuarioId = usuario.Id,
+            MedicoId = medico?.Id,
             SesionId = sesion.Id,
             Username = usuario.Username,
             Email = usuario.Email,

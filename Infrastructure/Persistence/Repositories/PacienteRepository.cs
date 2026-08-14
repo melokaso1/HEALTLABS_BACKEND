@@ -44,6 +44,8 @@ public sealed class PacienteRepository : IPacienteRepository
             .Include(p => p.Persona)
                 .ThenInclude(persona => persona!.Sexo)
             .Include(p => p.Persona)
-                .ThenInclude(persona => persona!.Telefonos);
+                .ThenInclude(persona => persona!.Telefonos)
+            .Include(p => p.Persona)
+                .ThenInclude(persona => persona!.Direcciones);
     }
 }

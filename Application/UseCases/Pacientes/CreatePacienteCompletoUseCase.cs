@@ -16,8 +16,29 @@ public sealed class CreatePacienteCompletoUseCase
     public async Task<PacienteEntity> ExecuteAsync(CreatePacienteCompletoDto dto)
     {
         var documento = NumeroDocumentoValueObject.Create(dto.Persona.NumeroDocumento).Value;
+        var persona = new PersonaEntity(
+            dto.Persona.Nombre,
+            dto.Persona.Apellido,
+            dto.Persona.TipoDocumentoId,
+            documento,
+            dto.Persona.FechaNacimiento,
+            dto.Persona.SexoId);
+        var paciente = new PacienteEntity(persona.Id, dto.Activo, dto.TipoSangre);
+        PersonaTelefonoEntity? telefono = !string.IsNullOrWhiteSpace(dto.Telefono)
+            ? new PersonaTelefonoEntity(persona.Id, dto.Telefono, dto.TipoTelefono, true)
+            : null;
+        PersonaDireccionEntity? direccion = !string.IsNullOrWhiteSpace(dto.Direccion)
+            ? new PersonaDireccionEntity(persona.Id, dto.Direccion, dto.Ciudad, true)
+            : null;
+
+        _context.Personas.Add(persona);
+        _context.Pacientes.Add(paciente);
+        if (telefono is not null)
+            _context.PersonasTelefono.Add(telefono);
+        if (direccion is not null)
+            _context.PersonasDireccion.Add(direccion);
+
         var strategy = _context.Database.CreateExecutionStrategy();
-        PacienteEntity? paciente = null;
 
         await strategy.ExecuteAsync(async () =>
         {
@@ -31,27 +52,20 @@ public sealed class CreatePacienteCompletoUseCase
                     x.TipoDocumentoId == dto.Persona.TipoDocumentoId && x.NumeroDocumento == documento))
                 throw new DuplicateDocumentException();
 
-            var persona = new PersonaEntity(
-                dto.Persona.Nombre,
-                dto.Persona.Apellido,
-                dto.Persona.TipoDocumentoId,
-                documento,
-                dto.Persona.FechaNacimiento,
-                dto.Persona.SexoId);
-            paciente = new PacienteEntity(persona.Id, dto.Activo, dto.TipoSangre);
-
-            _context.Personas.Add(persona);
-            _context.Pacientes.Add(paciente);
-
-            if (!string.IsNullOrWhiteSpace(dto.Telefono))
-                _context.PersonasTelefono.Add(new PersonaTelefonoEntity(persona.Id, dto.Telefono, dto.TipoTelefono, true));
-            if (!string.IsNullOrWhiteSpace(dto.Direccion))
-                _context.PersonasDireccion.Add(new PersonaDireccionEntity(persona.Id, dto.Direccion, dto.Ciudad, true));
-
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
         });
 
-        return paciente!;
+        return await _context.Pacientes
+            .AsNoTracking()
+            .Include(p => p.Persona!)
+                .ThenInclude(persona => persona.TipoDocumento!)
+            .Include(p => p.Persona!)
+                .ThenInclude(persona => persona.Sexo!)
+            .Include(p => p.Persona!)
+                .ThenInclude(persona => persona.Telefonos!)
+            .Include(p => p.Persona!)
+                .ThenInclude(persona => persona.Direcciones!)
+            .SingleAsync(p => p.Id == paciente.Id);
     }
 }

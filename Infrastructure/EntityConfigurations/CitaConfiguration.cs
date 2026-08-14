@@ -25,6 +25,7 @@ public class CitaConfiguration : IEntityTypeConfiguration<CitaEntity>
         builder.Property(x => x.MotivoCancelacion).HasMaxLength(500);
         builder.Property(x => x.UsuarioCancelacionId);
         builder.Property(x => x.FechaCancelacion);
+        builder.Property(x => x.OcupaCupo).IsRequired().HasDefaultValue(true);
 
         builder.HasIndex(x => new { x.MedicoId, x.Fecha, x.HoraInicio });
         builder.HasIndex(x => new { x.PacienteId, x.Fecha });

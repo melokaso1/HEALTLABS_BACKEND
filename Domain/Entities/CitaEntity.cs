@@ -17,6 +17,7 @@ namespace Domain.Entities
         public string? MotivoCancelacion { get; set; }
         public Guid? UsuarioCancelacionId { get; set; }
         public DateTime? FechaCancelacion { get; set; }
+        public bool OcupaCupo { get; set; } = true;
 
         public PacienteEntity? Paciente { get; set; }
         public MedicoEntity? Medico { get; set; }
@@ -53,6 +54,7 @@ namespace Domain.Entities
             Observaciones = observaciones;
             UsuarioCreacionId = usuarioCreacionId;
             FechaCreacion = DateTime.UtcNow;
+            OcupaCupo = true;
         }
         public void Reprogramar(
             Guid estadoCitaId,
@@ -66,6 +68,7 @@ namespace Domain.Entities
             HoraInicio = horaInicio;
             HoraFin = horaFin;
             Observaciones = observaciones;
+            OcupaCupo = true;
         }
 
         public void Cancelar(
@@ -77,6 +80,7 @@ namespace Domain.Entities
             MotivoCancelacion = motivo;
             UsuarioCancelacionId = usuarioId;
             FechaCancelacion = DateTime.UtcNow;
+            OcupaCupo = false;
         }
 
         public void CambiarEstado(Guid estadoCitaId)
@@ -87,6 +91,7 @@ namespace Domain.Entities
         public void MarcarNoAsistio(Guid estadoNoAsistioId)
         {
             EstadoCitaId = estadoNoAsistioId;
+            OcupaCupo = false;
         }
     }
 }

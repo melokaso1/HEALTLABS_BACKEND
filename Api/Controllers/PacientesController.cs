@@ -47,6 +47,21 @@ public sealed class PacientesController : ControllerBase
         return Ok(result.Paciente);
     }
 
+    [HttpGet("por-documento/{numero}")]
+    [Authorize(Roles = AppRoles.Staff)]
+    public async Task<IActionResult> GetPorDocumento(string numero)
+    {
+        var result = await _buscarPorDocumento.ExecutePorNumeroAsync(numero);
+
+        if (result.NoExiste)
+            return NotFound();
+
+        if (result.EstaInactivo)
+            return Conflict("El paciente se encuentra inactivo.");
+
+        return Ok(result.Paciente);
+    }
+
     [HttpGet("{id:guid}")]
     [Authorize(Roles = AppRoles.Staff)]
     public async Task<IActionResult> GetById(Guid id)
@@ -74,7 +89,10 @@ public sealed class PacientesController : ControllerBase
         try
         {
             var entity = await _createCompleto.ExecuteAsync(request);
-            return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity);
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = entity.Id },
+                PacienteResponseDto.FromEntity(entity));
         }
         catch (DuplicateDocumentException ex) { return Conflict(ex.Message); }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
@@ -95,7 +113,9 @@ public sealed class PacientesController : ControllerBase
             return NoContent();
         }
         catch (KeyNotFoundException) { return NotFound(); }
+        catch (DuplicateDocumentException ex) { return Conflict(ex.Message); }
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
+        catch (ArgumentException ex) { return BadRequest(ex.Message); }
     }
 
     [HttpDelete("{id:guid}")]

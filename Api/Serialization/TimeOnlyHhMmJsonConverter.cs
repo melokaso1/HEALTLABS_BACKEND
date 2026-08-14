@@ -5,12 +5,13 @@ using System.Text.Json.Serialization;
 namespace Api.Serialization;
 
 /// <summary>
-/// Serializa/deserializa <see cref="TimeOnly"/> estrictamente como HH:mm
-/// (sin segundos ni fracciones).
+/// Serializa <see cref="TimeOnly"/> como HH:mm y deserializa HH:mm o HH:mm:ss.
+/// Los segundos recibidos se descartan.
 /// </summary>
 public sealed class TimeOnlyHhMmJsonConverter : JsonConverter<TimeOnly>
 {
     private const string Format = "HH:mm";
+    private static readonly string[] AcceptedFormats = [Format, "HH:mm:ss"];
 
     public override TimeOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
@@ -24,10 +25,10 @@ public sealed class TimeOnlyHhMmJsonConverter : JsonConverter<TimeOnly>
         if (string.IsNullOrWhiteSpace(text))
             throw new JsonException("La hora no puede estar vacía. Use formato HH:mm.");
 
-        if (!TimeOnly.TryParseExact(text, Format, CultureInfo.InvariantCulture, DateTimeStyles.None, out var time))
-            throw new JsonException($"Formato de hora inválido: '{text}'. Use HH:mm (sin segundos).");
+        if (!TimeOnly.TryParseExact(text, AcceptedFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var time))
+            throw new JsonException($"Formato de hora inválido: '{text}'. Use HH:mm o HH:mm:ss en formato de 24 horas.");
 
-        return time;
+        return new TimeOnly(time.Hour, time.Minute);
     }
 
     public override void Write(Utf8JsonWriter writer, TimeOnly value, JsonSerializerOptions options)

@@ -52,6 +52,9 @@ namespace Application.UseCases.Usuarios
                 tokenVersion++;
             }
 
+            if (rolId != usuario.RolId || (!dto.Activo && usuario.Activo))
+                tokenVersion++;
+
             usuario.Update(
                 rolId,
                 username,

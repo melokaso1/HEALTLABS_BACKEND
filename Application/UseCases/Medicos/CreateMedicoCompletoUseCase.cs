@@ -16,8 +16,31 @@ public sealed class CreateMedicoCompletoUseCase
     public async Task<MedicoEntity> ExecuteAsync(CreateMedicoCompletoDto dto)
     {
         var documento = NumeroDocumentoValueObject.Create(dto.Persona.NumeroDocumento).Value;
+        var persona = new PersonaEntity(
+            dto.Persona.Nombre,
+            dto.Persona.Apellido,
+            dto.Persona.TipoDocumentoId,
+            documento,
+            dto.Persona.FechaNacimiento,
+            dto.Persona.SexoId);
+        var empleado = new EmpleadoEntity(
+            persona.Id,
+            dto.CargoId,
+            dto.FechaIngreso,
+            dto.FechaRetiro,
+            dto.EmpleadoActivo);
+        var medico = new MedicoEntity(empleado.Id, dto.RegistroProfesional, dto.MedicoActivo);
+        MedicoEspecialidadEntity? medicoEspecialidad = dto.EspecialidadId.HasValue
+            ? new MedicoEspecialidadEntity(medico.Id, dto.EspecialidadId.Value, dto.EspecialidadPrincipal)
+            : null;
+
+        _context.Personas.Add(persona);
+        _context.Empleados.Add(empleado);
+        _context.Medicos.Add(medico);
+        if (medicoEspecialidad is not null)
+            _context.MedicosEspecialidad.Add(medicoEspecialidad);
+
         var strategy = _context.Database.CreateExecutionStrategy();
-        MedicoEntity? medico = null;
 
         await strategy.ExecuteAsync(async () =>
         {
@@ -35,32 +58,10 @@ public sealed class CreateMedicoCompletoUseCase
                     x.TipoDocumentoId == dto.Persona.TipoDocumentoId && x.NumeroDocumento == documento))
                 throw new DuplicateDocumentException();
 
-            var persona = new PersonaEntity(
-                dto.Persona.Nombre,
-                dto.Persona.Apellido,
-                dto.Persona.TipoDocumentoId,
-                documento,
-                dto.Persona.FechaNacimiento,
-                dto.Persona.SexoId);
-            var empleado = new EmpleadoEntity(
-                persona.Id,
-                dto.CargoId,
-                dto.FechaIngreso,
-                dto.FechaRetiro,
-                dto.EmpleadoActivo);
-            medico = new MedicoEntity(empleado.Id, dto.RegistroProfesional, dto.MedicoActivo);
-
-            _context.Personas.Add(persona);
-            _context.Empleados.Add(empleado);
-            _context.Medicos.Add(medico);
-            if (dto.EspecialidadId.HasValue)
-                _context.MedicosEspecialidad.Add(
-                    new MedicoEspecialidadEntity(medico.Id, dto.EspecialidadId.Value, dto.EspecialidadPrincipal));
-
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
         });
 
-        return medico!;
+        return medico;
     }
 }

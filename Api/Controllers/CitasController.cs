@@ -6,6 +6,8 @@ using Domain.Entities;
 using Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Api.Controllers;
 
@@ -39,9 +41,13 @@ public sealed class CitasController : ControllerBase
         => (_getAll, _getById, _create, _cancel, _reprogramar, _marcarNoAsistio, _delete, _usuarios, _medicos, _realtime)
             = (getAll, getById, create, cancel, reprogramar, marcarNoAsistio, delete, usuarios, medicos, realtime);
 
+    /// <summary>Lista citas; use pacienteId para historial de paciente. Profesionales solo reciben sus propias citas.</summary>
     [HttpGet]
     [Authorize(Roles = AppRoles.Todos)]
-    public async Task<IActionResult> GetAll([FromQuery] DateOnly? desde = null, [FromQuery] DateOnly? hasta = null)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] Guid? pacienteId = null,
+        [FromQuery] DateOnly? desde = null,
+        [FromQuery] DateOnly? hasta = null)
     {
         Guid? medicoId = null;
         if (User.IsInRole(AppRoles.Medico)
@@ -55,7 +61,7 @@ public sealed class CitasController : ControllerBase
 
         try
         {
-            return Ok(await _getAll.ExecuteAsync(medicoId, desde, hasta));
+            return Ok(await _getAll.ExecuteAsync(medicoId, pacienteId, desde, hasta));
         }
         catch (ArgumentException ex)
         {
@@ -67,8 +73,23 @@ public sealed class CitasController : ControllerBase
     [Authorize(Roles = AppRoles.Todos)]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var entity = await _getById.ExecuteAsync(id);
-        return entity is null ? NotFound() : Ok(entity);
+        try
+        {
+            var entity = await _getById.ExecuteAsync(id);
+
+            if (IsProfessionalOnly())
+            {
+                var medicoId = await ResolveMedicoIdForCurrentUserAsync();
+                if (medicoId is null || entity.MedicoId != medicoId)
+                    return NotFound();
+            }
+
+            return Ok(entity);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
     }
 
     [HttpPost]
@@ -81,6 +102,10 @@ public sealed class CitasController : ControllerBase
             await _realtime.BroadcastNotificationAsync("Nueva cita agendada", "Se ha programado una nueva cita médica.", "success");
             await _realtime.BroadcastActivityAsync("Sistema de Citas", "agendó una nueva cita", entity.Fecha.ToString("yyyy-MM-dd"), "#00A896");
             return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.ExclusionViolation })
+        {
+            return Conflict("El horario seleccionado se solapa con otra cita activa del médico.");
         }
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
@@ -112,6 +137,10 @@ public sealed class CitasController : ControllerBase
             return NoContent();
         }
         catch (KeyNotFoundException) { return NotFound(); }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.ExclusionViolation })
+        {
+            return Conflict("El horario seleccionado se solapa con otra cita activa del médico.");
+        }
         catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
     }
 
@@ -156,4 +185,9 @@ public sealed class CitasController : ControllerBase
         var medico = await _medicos.FirstOrDefaultAsync(m => m.EmpleadoId == usuario.EmpleadoId);
         return medico?.Id;
     }
+
+    private bool IsProfessionalOnly() =>
+        User.IsInRole(AppRoles.Medico)
+        && !User.IsInRole(AppRoles.Admin)
+        && !User.IsInRole(AppRoles.Recepcionista);
 }
